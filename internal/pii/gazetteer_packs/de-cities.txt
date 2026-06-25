@@ -1,0 +1,159 @@
+# locale: de
+# type: CITY
+#
+# Curated list of major German cities compiled from public knowledge and
+# general reference sources. This file is an original curated work — it is
+# NOT a copy of any licensed dataset (no GeoNames, OSM, or proprietary
+# database). Conservative curation: cities whose names are also common
+# everyday German words where the non-city meaning dominates are excluded to
+# minimise false positives. When in doubt, the city is left out.
+# Precision over recall.
+#
+# This pack is OPT-IN: it is only loaded when "de-cities" is listed in
+# settings.pii.gazetteer.packs.
+#
+# Excluded (common word meaning dominates or high FP risk):
+#   Essen (essen = to eat)
+#   Hof (Hof = courtyard/farm)
+#   Berg (Berg = mountain)
+#   Bad (Bad = bath/spa — prefix in many city names, but standalone "Bad" is a word)
+#   Neustadt (Neue Stadt = new city, very generic)
+#   Landsberg (Landsberg = generic compound, ambiguous)
+#   Hameln (marginal, very small)
+#   Siegen (siegen = to win/prevail — verb meaning dominates in prose)
+#   Singen (singen = to sing — verb meaning dominates in prose)
+#
+# German spelling with umlauts is used (the gazetteer folds case per-rune).
+# ASCII variants (Muenchen, Nuernberg, Koeln, Duesseldorf) are intentionally
+# omitted — they are rarely used in German-language text and add FP surface.
+#
+# ── Top tier (largest cities, unambiguous names) ─────────────────────────────
+Berlin
+Hamburg
+München
+Köln
+Frankfurt am Main
+Stuttgart
+Düsseldorf
+Dortmund
+Leipzig
+Dresden
+Hannover
+Nürnberg
+Bremen
+Duisburg
+Bochum
+Wuppertal
+Bielefeld
+Bonn
+Mannheim
+Karlsruhe
+# ── Large cities ─────────────────────────────────────────────────────────────
+Wiesbaden
+Münster
+Augsburg
+Gelsenkirchen
+Mönchengladbach
+Braunschweig
+Chemnitz
+Kiel
+Aachen
+Magdeburg
+Freiburg im Breisgau
+Krefeld
+Lübeck
+Oberhausen
+Erfurt
+Mainz
+Rostock
+Kassel
+Hagen
+Hamm
+Saarbrücken
+Mülheim an der Ruhr
+Potsdam
+Ludwigshafen am Rhein
+Oldenburg
+Leverkusen
+Osnabrück
+Solingen
+Heidelberg
+Darmstadt
+Regensburg
+Ingolstadt
+Würzburg
+Fürth
+Wolfsburg
+Ulm
+Heilbronn
+Pforzheim
+Göttingen
+Bottrop
+Trier
+Recklinghausen
+Bremerhaven
+Jena
+Remscheid
+Erlangen
+Moers
+Salzgitter
+Gütersloh
+Hildesheim
+Kaiserslautern
+Cottbus
+Gera
+Iserlohn
+Schwerin
+Witten
+Zwickau
+Dessau
+Wilhelmshaven
+# ── Mid-tier cities (unambiguous names) ─────────────────────────────────────
+Wolfenbüttel
+Ratingen
+Lünen
+Velbert
+Minden
+Villingen-Schwenningen
+Hanau
+Koblenz
+Tübingen
+Flensburg
+Gießen
+Reutlingen
+Esslingen am Neckar
+Offenburg
+Bayreuth
+Bamberg
+Aschaffenburg
+Straubing
+Passau
+Landshut
+Rosenheim
+Kempten
+Konstanz
+Friedrichshafen
+Ravensburg
+Sindelfingen
+Böblingen
+Ludwigsburg
+Schwäbisch Gmünd
+Aalen
+Heidenheim
+Weimar
+Plauen
+Wismar
+Greifswald
+Stralsund
+Frankfurt an der Oder
+Brandenburg an der Havel
+Dessau-Roßlau
+Halle an der Saale
+Halberstadt
+Stendal
+Paderborn
+Detmold
+Soest
+Arnsberg
+Herne
+Unna

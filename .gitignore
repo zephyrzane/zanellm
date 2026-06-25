@@ -1,0 +1,49 @@
+# Binaries
+bin/
+tmp/
+
+# Build output
+ui/dist/
+
+# Local promo renders
+docs/promo/
+scripts/render-promo.mjs
+
+# Local account/bootstrap helpers
+cmd/zanellm-localsetup/
+
+# Config (never commit secrets)
+zanellm.yaml
+*.license.jwt
+
+# Database
+*.db
+*.db-shm
+*.db-wal
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+
+# Node
+node_modules/
+
+# Claude Code (auto-generated, never commit)
+.claude/
+
+# Binary (built by go build)
+/zanellm
+/bench
