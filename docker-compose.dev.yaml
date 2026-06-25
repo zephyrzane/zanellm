@@ -1,0 +1,18 @@
+services:
+  zanellm:
+    build:
+      context: .
+      args:
+        VERSION: dev
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./zanellm.yaml:/etc/zanellm/zanellm.yaml:ro
+      - ./zanellm.license.jwt:/etc/zanellm/zanellm.license.jwt:ro
+      - zanellm_data:/data
+    environment:
+      - ZANELLM_ADMIN_KEY=${ZANELLM_ADMIN_KEY}
+      - ZANELLM_ENCRYPTION_KEY=${ZANELLM_ENCRYPTION_KEY}
+
+volumes:
+  zanellm_data:
