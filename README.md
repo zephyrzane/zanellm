@@ -8,7 +8,7 @@
 
 Privacy-first local LLM gateway for developers.
 
-ZaneLLM gives one local OpenAI-compatible endpoint for provider accounts, API keys, model routing, usage, and playground testing. It is meant to sit between developer tools and upstream model providers.
+ZaneLLM gives one local endpoint for provider accounts, API keys, model routing, usage, and playground testing. It is meant to sit between developer tools and upstream model providers.
 
 ## What It Does
 
@@ -46,7 +46,8 @@ Providers and compatible APIs:
 - Fireworks
 - NVIDIA
 - SambaNova
-- Ollama, vLLM, and custom OpenAI-compatible base URLs
+- Ollama, vLLM
+ and many more
 
 Model types:
 
