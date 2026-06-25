@@ -1,0 +1,35 @@
+apiVersion: v2
+name: zanellm
+description: Privacy-first LLM proxy and AI gateway with load balancing, RBAC, MCP gateway, and built-in admin UI. Self-hosted, single binary, sub-500us overhead.
+type: application
+version: 0.0.21
+appVersion: "0.0.21"
+home: https://zanellm.ai
+icon: https://zanellm.ai/logo.svg
+sources:
+  - https://github.com/zanellm/zanellm
+maintainers:
+  - name: ZaneLLM
+    email: hello@zanellm.io
+    url: https://zanellm.io
+annotations:
+  artifacthub.io/license: BUSL-1.1
+  artifacthub.io/links: |
+    - name: Documentation
+      url: https://github.com/zanellm/zanellm/tree/main/docs
+    - name: Blog
+      url: https://zanellm.ai/blog
+keywords:
+  - llm
+  - proxy
+  - ai
+  - openai
+  - anthropic
+  - azure
+  - vllm
+  - ollama
+  - ai-gateway
+  - llm-proxy
+  - mcp
+  - privacy
+  - rbac

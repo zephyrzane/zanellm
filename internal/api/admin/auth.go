@@ -1,0 +1,618 @@
+package admin
+
+import (
+	"errors"
+	"log/slog"
+	"strings"
+	"time"
+
+	"github.com/gofiber/fiber/v3"
+	"golang.org/x/crypto/bcrypt"
+
+	"github.com/zanellm/zanellm/internal/apierror"
+	"github.com/zanellm/zanellm/internal/audit"
+	"github.com/zanellm/zanellm/internal/auth"
+	"github.com/zanellm/zanellm/internal/db"
+	"github.com/zanellm/zanellm/internal/jsonx"
+	"github.com/zanellm/zanellm/pkg/keygen"
+)
+
+// marshalDescription serializes a map to compact JSON for audit event descriptions.
+func marshalDescription(v any) string {
+	b, err := jsonx.Marshal(v)
+	if err != nil {
+		return ""
+	}
+	return string(b)
+}
+
+// dummyHash is used to burn CPU time on failed login paths, preventing
+// timing-based user enumeration (valid email ~100ms vs invalid email ~0ms).
+var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("void-dummy-timing-pad"), bcrypt.DefaultCost)
+
+// auditLoginFailed records a failed login attempt in the audit log.
+func (h *Handler) auditLoginFailed(c fiber.Ctx, email string, statusCode int) {
+	if h.AuditLogger == nil {
+		return
+	}
+	h.AuditLogger.Log(audit.Event{
+		Timestamp:    time.Now().UTC(),
+		Action:       "login_failed",
+		ResourceType: "session",
+		Description:  marshalDescription(map[string]string{"email": email}),
+		IPAddress:    c.IP(),
+		StatusCode:   statusCode,
+		RequestID:    apierror.RequestIDFromCtx(c),
+	})
+}
+
+// loginRequest is the JSON body for POST /api/v1/auth/login.
+type loginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type passwordLoginRequest struct {
+	Password string `json:"password"`
+}
+
+// meResponse is the JSON body returned for the authenticated user's profile.
+type meResponse struct {
+	ID            string `json:"id"`
+	Email         string `json:"email"`
+	DisplayName   string `json:"display_name"`
+	Role          string `json:"role"`
+	OrgID         string `json:"org_id,omitempty"`
+	IsSystemAdmin bool   `json:"is_system_admin"`
+}
+
+// loginResponse is the JSON body returned on successful authentication.
+type loginResponse struct {
+	Token     string     `json:"token"`
+	ExpiresAt string     `json:"expires_at"`
+	User      meResponse `json:"user"`
+}
+
+// Login handles POST /api/v1/auth/login. It verifies email and password and
+// returns a short-lived session token valid for 24 hours. The session token is
+// a real api_keys row and works with the existing auth middleware.
+// This endpoint does not require prior authentication.
+//
+// @Summary      Authenticate with email and password
+// @Description  Verifies credentials and returns a 24-hour session token. Revokes any existing session for the user.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      loginRequest  true  "Login credentials"
+// @Success      200   {object}  loginResponse
+// @Failure      400   {object}  swaggerErrorResponse
+// @Failure      401   {object}  swaggerErrorResponse
+// @Failure      500   {object}  swaggerErrorResponse
+// @Router       /auth/login [post]
+func (h *Handler) Login(c fiber.Ctx) error {
+	var req loginRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		h.auditLoginFailed(c, req.Email, fiber.StatusBadRequest)
+		return apierror.BadRequest(c, "invalid request body")
+	}
+	if req.Email == "" {
+		h.auditLoginFailed(c, req.Email, fiber.StatusBadRequest)
+		return apierror.BadRequest(c, "email is required")
+	}
+	if req.Password == "" {
+		h.auditLoginFailed(c, req.Email, fiber.StatusBadRequest)
+		return apierror.BadRequest(c, "password is required")
+	}
+
+	return h.loginWithPassword(c, req.Email, req.Password)
+}
+
+func (h *Handler) PasswordLogin(c fiber.Ctx) error {
+	var req passwordLoginRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		h.auditLoginFailed(c, "", fiber.StatusBadRequest)
+		return apierror.BadRequest(c, "invalid request body")
+	}
+	if req.Password == "" {
+		h.auditLoginFailed(c, "", fiber.StatusBadRequest)
+		return apierror.BadRequest(c, "password is required")
+	}
+
+	ctx := c.Context()
+	email, _, _, err := h.DB.GetFirstLocalAdminPasswordHash(ctx)
+	if err != nil {
+		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(req.Password))
+		h.auditLoginFailed(c, "", fiber.StatusUnauthorized)
+		if errors.Is(err, db.ErrNotFound) || errors.Is(err, db.ErrNoPassword) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "invalid password")
+		}
+		h.Log.ErrorContext(ctx, "password login: get local admin", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	return h.loginWithPassword(c, email, req.Password)
+}
+
+func (h *Handler) PasswordlessLogin(c fiber.Ctx) error {
+	ctx := c.Context()
+	email, userID, err := h.DB.GetFirstPasswordlessLocalAdmin(ctx)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "passwordless login is not enabled")
+		}
+		h.Log.ErrorContext(ctx, "passwordless login: get local admin", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	role, orgID, err := h.DB.ResolveUserRole(ctx, userID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user has no organization membership")
+		}
+		h.Log.ErrorContext(ctx, "passwordless login: resolve user role", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+	if orgID == "" {
+		h.Log.WarnContext(ctx, "passwordless login: user has no organization membership", slog.String("email", email))
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "authentication failed")
+	}
+
+	return h.createLoginSession(c, email, userID, role, orgID)
+}
+
+func (h *Handler) loginWithPassword(c fiber.Ctx, email string, password string) error {
+	// Brute-force protection: per-IP rate limit and per-account lockout.
+	// Called after field validation so that missing-field 400s are not throttled.
+	if h.LoginThrottle != nil {
+		if err := h.LoginThrottle.Allow(c.IP(), email); err != nil {
+			h.Log.LogAttrs(c.Context(), slog.LevelWarn, "login throttled",
+				slog.String("ip", c.IP()),
+				slog.String("email", email),
+			)
+			// Burn bcrypt time before returning 429 so that a throttled response
+			// takes ~the same wall time as a normal failed-password response.
+			// Without this, an attacker can distinguish "account locked" (fast)
+			// from "wrong password" (slow ~100ms) via timing. The error is
+			// intentionally discarded — the burn's only purpose is elapsed time.
+			_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+			return apierror.Send(c, fiber.StatusTooManyRequests, "too_many_requests", "too many login attempts, try again later")
+		}
+	}
+
+	ctx := c.Context()
+
+	userID, hash, err := h.DB.GetUserPasswordHash(ctx, email)
+	if err != nil {
+		// Burn bcrypt time to prevent timing-based email enumeration.
+		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+		if errors.Is(err, db.ErrNotFound) || errors.Is(err, db.ErrNoPassword) {
+			if h.LoginThrottle != nil {
+				h.LoginThrottle.RecordFailure(email)
+			}
+			h.auditLoginFailed(c, email, fiber.StatusUnauthorized)
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "invalid email or password")
+		}
+		h.Log.ErrorContext(ctx, "login: get user password hash", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)); err != nil {
+		if h.LoginThrottle != nil {
+			h.LoginThrottle.RecordFailure(email)
+		}
+		h.auditLoginFailed(c, email, fiber.StatusUnauthorized)
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "invalid email or password")
+	}
+
+	role, orgID, err := h.DB.ResolveUserRole(ctx, userID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			h.auditLoginFailed(c, email, fiber.StatusUnauthorized)
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user has no organization membership")
+		}
+		h.Log.ErrorContext(ctx, "login: resolve user role", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	// Defense-in-depth guard for legacy/inconsistent data: under the current
+	// invariant every user belongs to an org, so orgID is never empty here.
+	// Deployments affected by the old bug may have org-less users in their DB.
+	// Return the same generic 401 as a wrong password to prevent enumeration —
+	// an attacker who already supplied the correct password must not learn that
+	// the account exists but has no org. The specific reason is written to the
+	// server log for operators.
+	if orgID == "" {
+		h.Log.WarnContext(ctx, "login: user has no organization membership",
+			slog.String("email", email))
+		h.auditLoginFailed(c, email, fiber.StatusUnauthorized)
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "invalid email or password")
+	}
+
+	return h.createLoginSession(c, email, userID, role, orgID)
+}
+
+func (h *Handler) createLoginSession(c fiber.Ctx, email string, userID string, role string, orgID string) error {
+	ctx := c.Context()
+	// Revoke previous session keys for this user so only one session exists.
+	if err := h.DB.RevokeUserSessions(ctx, userID); err != nil {
+		h.Log.ErrorContext(ctx, "login: revoke old sessions", slog.String("error", err.Error()))
+		// Non-fatal: proceed with login even if cleanup fails.
+	}
+
+	key, err := keygen.Generate(keygen.KeyTypeSession)
+	if err != nil {
+		h.Log.ErrorContext(ctx, "login: generate session key", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	keyHash := keygen.Hash(key, h.HMACSecret)
+	keyHint := keygen.Hint(key)
+	expiresAt := time.Now().UTC().Add(24 * time.Hour)
+	expiresAtStr := expiresAt.Format(time.RFC3339)
+
+	apiKey, err := h.DB.CreateAPIKey(ctx, db.CreateAPIKeyParams{
+		KeyHash:   keyHash,
+		KeyHint:   keyHint,
+		KeyType:   keygen.KeyTypeSession,
+		Name:      "Login session",
+		OrgID:     orgID,
+		UserID:    &userID,
+		ExpiresAt: &expiresAtStr,
+		CreatedBy: userID,
+	})
+	if err != nil {
+		h.Log.ErrorContext(ctx, "login: create api key", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	h.KeyCache.Set(keyHash, auth.KeyInfo{
+		ID:        apiKey.ID,
+		KeyType:   keygen.KeyTypeSession,
+		Role:      role,
+		OrgID:     orgID,
+		UserID:    userID,
+		Name:      "Login session",
+		ExpiresAt: &expiresAt,
+	})
+
+	user, err := h.DB.GetUser(ctx, userID)
+	if err != nil {
+		h.Log.ErrorContext(ctx, "login: get user", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "authentication failed")
+	}
+
+	if h.LoginThrottle != nil {
+		h.LoginThrottle.RecordSuccess(email)
+	}
+
+	if h.AuditLogger != nil {
+		h.AuditLogger.Log(audit.Event{
+			Timestamp:    time.Now().UTC(),
+			OrgID:        orgID,
+			ActorID:      user.ID,
+			ActorType:    "user",
+			ActorKeyID:   apiKey.ID,
+			Action:       "login",
+			ResourceType: "session",
+			ResourceID:   apiKey.ID,
+			Description:  marshalDescription(map[string]string{"email": email}),
+			IPAddress:    c.IP(),
+			StatusCode:   fiber.StatusOK,
+			RequestID:    apierror.RequestIDFromCtx(c),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(loginResponse{
+		Token:     key,
+		ExpiresAt: expiresAtStr,
+		User: meResponse{
+			ID:            user.ID,
+			Email:         user.Email,
+			DisplayName:   user.DisplayName,
+			Role:          role,
+			OrgID:         orgID,
+			IsSystemAdmin: user.IsSystemAdmin,
+		},
+	})
+}
+
+// availableModel is a single model entry in the available-models response.
+type availableModel struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+// availableModelsResponse is the JSON body returned by AvailableModels.
+type availableModelsResponse struct {
+	Models []availableModel `json:"models"`
+}
+
+// AvailableModels handles GET /api/v1/me/available-models.
+// It returns the list of models accessible to the current key's scope,
+// respecting the org → team → key access hierarchy enforced by the access cache.
+// Any authenticated key may call this endpoint — no additional role is required.
+//
+// @Summary      List models available to the authenticated key
+// @Description  Returns models accessible to the caller's org, team, and key scope.
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  availableModelsResponse
+// @Failure      401  {object}  swaggerErrorResponse
+// @Security     BearerAuth
+// @Router       /me/available-models [get]
+func (h *Handler) AvailableModels(c fiber.Ctx) error {
+	keyInfo := auth.KeyInfoFromCtx(c)
+	if keyInfo == nil {
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "missing authentication")
+	}
+
+	allModels := h.Registry.ListInfo()
+
+	models := make([]availableModel, 0, len(allModels))
+	seen := make(map[string]struct{}, len(allModels))
+	for _, m := range allModels {
+		if h.AccessCache == nil || h.AccessCache.Check(keyInfo.OrgID, keyInfo.TeamID, keyInfo.ID, m.Name) {
+			modelType := m.Type
+			if modelType == "" {
+				modelType = "chat"
+			}
+			if _, ok := seen[m.Name]; !ok {
+				seen[m.Name] = struct{}{}
+				models = append(models, availableModel{Name: m.Name, Type: modelType})
+			}
+			for _, alias := range m.Aliases {
+				alias = strings.TrimSpace(alias)
+				if alias == "" {
+					continue
+				}
+				if _, ok := seen[alias]; ok {
+					continue
+				}
+				seen[alias] = struct{}{}
+				models = append(models, availableModel{Name: alias, Type: modelType})
+			}
+		}
+	}
+
+	return c.JSON(availableModelsResponse{Models: models})
+}
+
+// changeOwnPasswordRequest is the JSON body for POST /api/v1/me/password.
+type changeOwnPasswordRequest struct {
+	CurrentPassword string `json:"current_password"`
+	NewPassword     string `json:"new_password"`
+}
+
+// ChangeOwnPassword handles POST /api/v1/me/password. It verifies the caller's
+// current password, then replaces it with the new one and invalidates all other
+// active sessions for the user. The current session remains valid.
+// Only local (non-SSO) accounts may use this endpoint.
+//
+// @Summary      Change own password
+// @Description  Verifies the current password and sets a new one. Revokes all other active sessions. Requires a user-scoped session key.
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        body  body      changeOwnPasswordRequest  true  "Password change request"
+// @Success      200   "OK"
+// @Failure      400   {object}  swaggerErrorResponse
+// @Failure      401   {object}  swaggerErrorResponse
+// @Failure      500   {object}  swaggerErrorResponse
+// @Security     BearerAuth
+// @Router       /me/password [post]
+func (h *Handler) ChangeOwnPassword(c fiber.Ctx) error {
+	keyInfo := auth.KeyInfoFromCtx(c)
+	if keyInfo == nil {
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "missing authentication")
+	}
+	if keyInfo.UserID == "" {
+		return apierror.Send(c, fiber.StatusBadRequest, "bad_request", "this endpoint requires a user-scoped key")
+	}
+
+	var req changeOwnPasswordRequest
+	if err := c.Bind().JSON(&req); err != nil {
+		return apierror.BadRequest(c, "invalid request body")
+	}
+	if len(req.NewPassword) < 8 {
+		return apierror.BadRequest(c, "new_password must be at least 8 characters")
+	}
+	if len(req.NewPassword) > 72 {
+		return apierror.BadRequest(c, "new_password must be at most 72 bytes")
+	}
+
+	ctx := c.Context()
+
+	authProvider, currentHash, err := h.DB.GetUserPasswordHashByID(ctx, keyInfo.UserID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user not found")
+		}
+		if errors.Is(err, db.ErrNoPassword) {
+			// Local users may intentionally remove their password and set a new
+			// one later from an active session. Non-local accounts remain blocked
+			// by the authProvider check below.
+		} else {
+			h.Log.ErrorContext(ctx, "change own password: get password hash", slog.String("error", err.Error()))
+			return apierror.InternalError(c, "failed to verify current password")
+		}
+	}
+
+	// SSO accounts never have a local password even if auth_provider is set.
+	// The ErrNoPassword sentinel above covers the NULL hash case; this guard
+	// catches rows where auth_provider is set to a non-local value but the hash
+	// column is somehow populated — defensive, belt-and-suspenders.
+	if authProvider != "local" {
+		// Burn bcrypt time to prevent timing-based account-type enumeration.
+		// The error from CompareHashAndPassword is intentionally ignored here.
+		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(req.CurrentPassword))
+		return apierror.BadRequest(c, "password change not available for this account")
+	}
+
+	if currentHash != "" {
+		if req.CurrentPassword == "" {
+			return apierror.BadRequest(c, "current_password is required")
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(currentHash), []byte(req.CurrentPassword)); err != nil {
+			return apierror.Send(c, fiber.StatusBadRequest, "bad_request", "current password is incorrect")
+		}
+	}
+
+	newHash, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		if errors.Is(err, bcrypt.ErrPasswordTooLong) {
+			return apierror.BadRequest(c, "new_password must be at most 72 bytes")
+		}
+		h.Log.ErrorContext(ctx, "change own password: bcrypt", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "failed to hash new password")
+	}
+	newHashStr := string(newHash)
+
+	// Update the password hash and revoke all other sessions atomically.
+	// If either operation fails the transaction rolls back, leaving the DB
+	// consistent: neither the password nor the session list is partially updated.
+	if err := h.DB.ChangePasswordAndRevokeOtherSessions(ctx, keyInfo.UserID, newHashStr, keyInfo.ID); err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user not found")
+		}
+		h.Log.ErrorContext(ctx, "change own password: update password and revoke sessions", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "failed to update password")
+	}
+
+	// Evict all other session entries for this user from the in-memory key cache
+	// so that revoked sessions are rejected immediately without waiting for the
+	// next periodic cache refresh.
+	// Collect hashes first — Range holds a read lock, so Delete (write lock)
+	// must not be called inside the Range closure.
+	var toEvict []string
+	currentKeyID := keyInfo.ID
+	h.KeyCache.Range(func(keyHash string, ki auth.KeyInfo) bool {
+		if ki.UserID == keyInfo.UserID && ki.ID != currentKeyID {
+			toEvict = append(toEvict, keyHash)
+		}
+		return true
+	})
+	for _, keyHash := range toEvict {
+		h.KeyCache.Delete(keyHash)
+	}
+
+	if h.AuditLogger != nil {
+		h.AuditLogger.Log(audit.Event{
+			Timestamp:    time.Now().UTC(),
+			OrgID:        keyInfo.OrgID,
+			ActorID:      keyInfo.UserID,
+			ActorType:    "user",
+			ActorKeyID:   keyInfo.ID,
+			Action:       "password_change",
+			ResourceType: "user",
+			ResourceID:   keyInfo.UserID,
+			IPAddress:    c.IP(),
+			StatusCode:   fiber.StatusOK,
+			RequestID:    apierror.RequestIDFromCtx(c),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+func (h *Handler) RemoveOwnPassword(c fiber.Ctx) error {
+	keyInfo := auth.KeyInfoFromCtx(c)
+	if keyInfo == nil {
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "missing authentication")
+	}
+	if keyInfo.UserID == "" {
+		return apierror.Send(c, fiber.StatusBadRequest, "bad_request", "this endpoint requires a user-scoped key")
+	}
+
+	ctx := c.Context()
+	authProvider, _, err := h.DB.GetUserPasswordHashByID(ctx, keyInfo.UserID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user not found")
+		}
+		if errors.Is(err, db.ErrNoPassword) {
+			return c.SendStatus(fiber.StatusOK)
+		}
+		h.Log.ErrorContext(ctx, "remove own password: get password hash", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "failed to verify password state")
+	}
+	if authProvider != "local" {
+		return apierror.BadRequest(c, "password removal not available for this account")
+	}
+
+	if err := h.DB.RemovePasswordAndRevokeOtherSessions(ctx, keyInfo.UserID, keyInfo.ID); err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "user not found")
+		}
+		h.Log.ErrorContext(ctx, "remove own password: update password and revoke sessions", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "failed to remove password")
+	}
+
+	var toEvict []string
+	currentKeyID := keyInfo.ID
+	h.KeyCache.Range(func(keyHash string, ki auth.KeyInfo) bool {
+		if ki.UserID == keyInfo.UserID && ki.ID != currentKeyID {
+			toEvict = append(toEvict, keyHash)
+		}
+		return true
+	})
+	for _, keyHash := range toEvict {
+		h.KeyCache.Delete(keyHash)
+	}
+
+	if h.AuditLogger != nil {
+		h.AuditLogger.Log(audit.Event{
+			Timestamp:    time.Now().UTC(),
+			OrgID:        keyInfo.OrgID,
+			ActorID:      keyInfo.UserID,
+			ActorType:    "user",
+			ActorKeyID:   keyInfo.ID,
+			Action:       "password_remove",
+			ResourceType: "user",
+			ResourceID:   keyInfo.UserID,
+			IPAddress:    c.IP(),
+			StatusCode:   fiber.StatusOK,
+			RequestID:    apierror.RequestIDFromCtx(c),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusOK)
+}
+
+// Me returns the authenticated user's profile.
+//
+// @Summary      Get authenticated user profile
+// @Description  Returns the profile of the user associated with the current session key.
+// @Tags         auth
+// @Produce      json
+// @Success      200  {object}  meResponse
+// @Failure      400  {object}  swaggerErrorResponse
+// @Failure      401  {object}  swaggerErrorResponse
+// @Failure      404  {object}  swaggerErrorResponse
+// @Failure      500  {object}  swaggerErrorResponse
+// @Security     BearerAuth
+// @Router       /me [get]
+func (h *Handler) Me(c fiber.Ctx) error {
+	keyInfo := auth.KeyInfoFromCtx(c)
+	if keyInfo == nil {
+		return apierror.Send(c, fiber.StatusUnauthorized, "unauthorized", "missing authentication")
+	}
+	if keyInfo.UserID == "" {
+		return apierror.Send(c, fiber.StatusBadRequest, "bad_request", "this endpoint requires a user-scoped key")
+	}
+	user, err := h.DB.GetUser(c.Context(), keyInfo.UserID)
+	if err != nil {
+		if errors.Is(err, db.ErrNotFound) {
+			return apierror.NotFound(c, "user not found")
+		}
+		h.Log.ErrorContext(c.Context(), "me: get user", slog.String("error", err.Error()))
+		return apierror.InternalError(c, "failed to retrieve user profile")
+	}
+	return c.JSON(meResponse{
+		ID:            user.ID,
+		Email:         user.Email,
+		DisplayName:   user.DisplayName,
+		Role:          keyInfo.Role,
+		OrgID:         keyInfo.OrgID,
+		IsSystemAdmin: user.IsSystemAdmin,
+	})
+}
