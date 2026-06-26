@@ -37,7 +37,7 @@ function GuideTile({ card, onOpen }: { card: GuideCard; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group min-h-[168px] overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0b] text-left transition-all duration-150 hover:border-white/[0.22] hover:bg-[#101010] hover:shadow-[0_18px_55px_rgba(0,0,0,0.36)]"
+      className="group min-h-[184px] overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0b] text-left transition-all duration-150 hover:border-white/[0.22] hover:bg-[#101010] hover:shadow-[0_18px_55px_rgba(0,0,0,0.36)]"
     >
       <div className="flex h-20 items-center justify-center border-b border-white/[0.08] bg-black">
         <img
@@ -55,6 +55,10 @@ function GuideTile({ card, onOpen }: { card: GuideCard; onOpen: () => void }) {
           </span>
         </div>
         <p className="mt-3 line-clamp-2 text-sm leading-5 text-text-tertiary">{card.notes[0]}</p>
+        <div className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-text-secondary transition-colors group-hover:text-text-primary">
+          <span>Click to see details</span>
+          <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">→</span>
+        </div>
       </div>
     </button>
   )

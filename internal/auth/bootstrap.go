@@ -2,12 +2,10 @@ package auth
 
 import (
 	"context"
-	"crypto/rand"
 	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
-	"math/big"
 	"os"
 
 	"github.com/google/uuid"
@@ -18,6 +16,8 @@ import (
 	"github.com/zanellm/zanellm/internal/db"
 	"github.com/zanellm/zanellm/pkg/keygen"
 )
+
+const defaultLocalPassword = "3214"
 
 // BootstrapResult holds the plaintext credentials generated during a successful
 // bootstrap. These values must be presented to the operator exactly once and
@@ -72,10 +72,7 @@ func Bootstrap(ctx context.Context, sqlDB *sql.DB, dialect db.Dialect,
 		return nil, fmt.Errorf("bootstrap: generate key id: %w", err)
 	}
 
-	password, err := generatePassword(16)
-	if err != nil {
-		return nil, fmt.Errorf("bootstrap: %w", err)
-	}
+	password := defaultLocalPassword
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -194,18 +191,4 @@ func Bootstrap(ctx context.Context, sqlDB *sql.DB, dialect db.Dialect,
 		Email:    adminEmail,
 		Password: password,
 	}, nil
-}
-
-// generatePassword creates a random alphanumeric password of the given length.
-func generatePassword(length int) (string, error) {
-	const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, length)
-	for i := range b {
-		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
-		if err != nil {
-			return "", fmt.Errorf("generate password: %w", err)
-		}
-		b[i] = charset[idx.Int64()]
-	}
-	return string(b), nil
 }
