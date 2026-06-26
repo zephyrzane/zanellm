@@ -123,9 +123,9 @@ export default function AcceptInvitePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-bg-primary px-4">
-      <div className="w-full max-w-sm bg-bg-secondary border border-white/5 rounded-xl p-8">
+      <div className="w-full max-w-sm bg-bg-secondary border border-border rounded-xl p-8">
         <div className="mb-8 text-center">
-          <span className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/[0.06]">
+          <span className="mx-auto mb-3 grid h-11 w-11 place-items-center rounded-xl border border-border bg-bg-tertiary">
             <img src="/logo-zanellm.png" alt="" className="h-7 w-7 object-contain" aria-hidden="true" />
           </span>
           <h1 className="text-3xl font-bold gradient-text">ZaneLLM</h1>

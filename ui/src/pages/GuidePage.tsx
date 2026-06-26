@@ -26,7 +26,7 @@ interface GuideCard {
 
 function CodeBlock({ lines }: { lines: string[] }) {
   return (
-    <pre className="overflow-x-auto rounded-md border border-white/[0.08] bg-black px-3 py-3 font-mono text-xs leading-5 text-text-secondary">
+    <pre className="overflow-x-auto rounded-md border border-border bg-bg-primary px-3 py-3 font-mono text-xs leading-5 text-text-secondary">
       {lines.join('\n')}
     </pre>
   )
@@ -37,9 +37,9 @@ function GuideTile({ card, onOpen }: { card: GuideCard; onOpen: () => void }) {
     <button
       type="button"
       onClick={onOpen}
-      className="group min-h-[184px] overflow-hidden rounded-xl border border-white/[0.08] bg-[#0b0b0b] text-left transition-all duration-150 hover:border-white/[0.22] hover:bg-[#101010] hover:shadow-[0_18px_55px_rgba(0,0,0,0.36)]"
+      className="group min-h-[184px] overflow-hidden rounded-xl border border-border bg-bg-secondary text-left transition-all duration-150 hover:border-accent hover:bg-bg-tertiary"
     >
-      <div className="flex h-20 items-center justify-center border-b border-white/[0.08] bg-black">
+      <div className="flex h-20 items-center justify-center border-b border-border bg-bg-primary">
         <img
           src={card.image}
           alt=""
@@ -67,7 +67,7 @@ function GuideTile({ card, onOpen }: { card: GuideCard; onOpen: () => void }) {
 function GuideDialog({ card, onClose }: { card: GuideCard; onClose: () => void }) {
   return (
     <Dialog open onClose={onClose} title={card.title} className="space-y-5" closeOnBackdrop>
-      <div className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-black p-4">
+      <div className="flex items-center gap-4 rounded-xl border border-border bg-bg-primary p-4">
         <img src={card.image} alt="" className="h-12 w-12 object-contain" />
         <div>
           <div className="text-xs font-medium uppercase tracking-[0.16em] text-text-tertiary">{card.surface}</div>

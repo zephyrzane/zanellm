@@ -8,8 +8,7 @@
 
 `zanellm` is a local LLM gateway for developer tools, API accounts, model routes, and usage tracking.
 
-It gives you one local endpoint, encrypted upstream provider credentials, local API keys, model import, routing, playground testing, usage metrics, and profile themes.
-
+It gives you one local OpenAI-compatible endpoint, encrypted upstream provider credentials, local API keys, model import, routing, playground testing, usage metrics, and profile themes.
 
 ## Installation
 

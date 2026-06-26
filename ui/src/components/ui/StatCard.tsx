@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils'
 
 // Map of named colors to Tailwind bg/text utility pairs
 const iconColorMap: Record<string, { bg: string; text: string }> = {
-  purple: { bg: 'bg-white/[0.06]', text: 'text-text-primary' },
+  purple: { bg: 'bg-bg-secondary', text: 'text-text-primary' },
   green:  { bg: 'bg-success/10', text: 'text-success' },
   pink:   { bg: 'bg-info/10', text: 'text-info' },
   blue:   { bg: 'bg-info/10', text: 'text-info' },
@@ -51,7 +51,7 @@ export function StatCard({ label, value, icon, trend, iconColor, className, ...r
             className={cn(
               'shrink-0 mb-3 block w-fit',
               colorClasses != null
-                ? cn('p-2 rounded-full border border-white/[0.06]', colorClasses.bg, colorClasses.text)
+                ? cn('p-2 rounded-full border border-border', colorClasses.bg, colorClasses.text)
                 : 'text-text-tertiary',
             )}
             aria-hidden="true"

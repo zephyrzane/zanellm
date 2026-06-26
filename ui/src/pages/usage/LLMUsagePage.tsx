@@ -220,8 +220,8 @@ export default function LLMUsagePage() {
               onClick={() => setRange(r)}
               className={
                 range === r
-                  ? 'rounded px-3 py-1.5 text-sm font-medium bg-white/[0.08] text-text-primary transition-colors'
-                  : 'rounded px-3 py-1.5 text-sm font-medium text-text-tertiary hover:bg-white/[0.045] hover:text-text-secondary transition-colors'
+                  ? 'rounded px-3 py-1.5 text-sm font-medium bg-bg-secondary text-text-primary transition-colors'
+                  : 'rounded px-3 py-1.5 text-sm font-medium text-text-tertiary hover:bg-bg-secondary hover:text-text-secondary transition-colors'
               }
             >
               {r}

@@ -50,11 +50,12 @@ const DEFAULT_MAX_TOKENS = 4096
 
 const typeLabels: Record<string, string> = {
   chat: 'Chat',
+  responses: 'Responses',
   completion: 'Completion',
   embedding: 'Embedding',
   image: 'Image',
 }
-const supportedTypes = ['chat', 'completion', 'embedding', 'image']
+const supportedTypes = ['chat', 'responses', 'completion', 'embedding', 'image']
 const preferredImageModels = [
   'gpt-image-2',
   'gpt-image-latest',
@@ -1174,7 +1175,7 @@ export default function PlaygroundPage() {
                   {imageResults.map((item, idx) => (
                     <div
                       key={`${item.src.slice(0, 64)}-${idx}`}
-                      className="overflow-hidden rounded-xl border border-border bg-bg-secondary transition-colors hover:border-white/20"
+                      className="overflow-hidden rounded-xl border border-border bg-bg-secondary transition-colors hover:border-accent"
                     >
                       <img
                         src={item.src}

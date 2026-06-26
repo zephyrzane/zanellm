@@ -16,7 +16,7 @@ function TopActions() {
     <div className="fixed right-3 top-3 z-50 flex items-center gap-2 md:right-6 md:top-5">
       <Link
         to="/profile"
-        className="flex h-9 items-center gap-2 rounded-lg px-2.5 text-sm text-text-secondary no-underline hover:bg-white/[0.055] hover:text-text-primary"
+        className="flex h-9 items-center gap-2 rounded-lg px-2.5 text-sm text-text-secondary no-underline hover:bg-bg-tertiary hover:text-text-primary"
       >
         <Avatar name={me?.display_name} src={avatar} size="sm" />
         <span>Profile</span>
@@ -28,7 +28,7 @@ function TopActions() {
           queryClient.clear()
           window.location.href = '/login'
         }}
-        className="h-9 rounded-lg px-3 text-sm text-text-secondary hover:bg-white/[0.055] hover:text-error"
+        className="h-9 rounded-lg px-3 text-sm text-text-secondary hover:bg-bg-tertiary hover:text-error"
       >
         Logout
       </button>

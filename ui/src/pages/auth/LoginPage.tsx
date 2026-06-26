@@ -26,8 +26,8 @@ const modelLogos = [
 
 function ModelLogo({ label, src }: { label: string; src: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-white/[0.07] bg-white/[0.025] px-2 py-1.5">
-      <span className="grid h-6 w-6 shrink-0 place-items-center rounded bg-white/[0.045]">
+    <div className="flex items-center gap-2 rounded-md border border-border bg-bg-secondary px-2 py-1.5">
+      <span className="grid h-6 w-6 shrink-0 place-items-center rounded bg-bg-tertiary">
         <img src={src} alt="" className="h-4 w-4 object-contain" aria-hidden="true" />
       </span>
       <span className="truncate text-[11px] text-text-tertiary">{label}</span>

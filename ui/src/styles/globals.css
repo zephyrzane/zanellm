@@ -39,6 +39,21 @@
   --gradient-end: #8a929f;
 }
 
+html[data-theme-mode="light"] {
+  --color-bg-primary: #f7f7f5;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #eeeeeb;
+  --color-text-primary: #171717;
+  --color-text-secondary: #3f3f46;
+  --color-text-tertiary: #71717a;
+  --color-border: rgba(24, 24, 27, 0.12);
+}
+
+html[data-theme-mode="light"] body {
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
 @layer base {
   *, *::before, *::after {
     box-sizing: border-box;

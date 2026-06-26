@@ -179,6 +179,7 @@ var validModelTypes = map[string]bool{
 	"chat":                true,
 	"embedding":           true,
 	"reranking":           true,
+	"responses":           true,
 	"completion":          true,
 	"image":               true,
 	"audio_transcription": true,
@@ -480,7 +481,7 @@ func (h *Handler) CreateModel(c fiber.Ctx) error {
 		}
 	}
 	if req.Type != "" && !validModelTypes[req.Type] {
-		return apierror.BadRequest(c, "type must be one of: chat, embedding, reranking, completion, image, audio_transcription, tts")
+		return apierror.BadRequest(c, "type must be one of: chat, embedding, reranking, responses, completion, image, audio_transcription, tts")
 	}
 	if req.Strategy != "" {
 		validStrategies := map[string]bool{
@@ -800,7 +801,7 @@ func (h *Handler) UpdateModel(c fiber.Ctx) error {
 		}
 	}
 	if req.Type != nil && !validModelTypes[*req.Type] {
-		return apierror.BadRequest(c, "type must be one of: chat, embedding, reranking, completion, image, audio_transcription, tts")
+		return apierror.BadRequest(c, "type must be one of: chat, embedding, reranking, responses, completion, image, audio_transcription, tts")
 	}
 	if req.Strategy != nil && *req.Strategy != "" {
 		validStrategies := map[string]bool{

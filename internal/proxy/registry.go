@@ -66,7 +66,7 @@ func (d Deployment) LogValue() slog.Value {
 type Model struct {
 	Name     string
 	Provider string // "vllm" | "openai" | "anthropic" | "azure" | "ollama" | "custom"
-	// "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
+	// "responses", "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
 	Type             string
 	BaseURL          string
 	APIKey           string // upstream provider's API key (plaintext, in-memory)

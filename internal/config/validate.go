@@ -30,6 +30,7 @@ var validModelTypes = map[string]bool{
 	"chat":                true,
 	"embedding":           true,
 	"reranking":           true,
+	"responses":           true,
 	"completion":          true,
 	"image":               true,
 	"audio_transcription": true,
@@ -125,7 +126,7 @@ func (c *Config) validate() error {
 		}
 
 		if !validModelTypes[m.Type] {
-			errs = append(errs, fmt.Errorf("%s.type: must be one of chat, embedding, reranking, completion, image, audio_transcription, tts; got %q", prefix, m.Type))
+			errs = append(errs, fmt.Errorf("%s.type: must be one of chat, embedding, reranking, responses, completion, image, audio_transcription, tts; got %q", prefix, m.Type))
 		}
 
 		if m.MaxRetries < 0 {

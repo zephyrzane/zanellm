@@ -139,7 +139,7 @@ func (d DeploymentConfig) LogValue() slog.Value {
 type ModelConfig struct {
 	Name     string `yaml:"name"`
 	Provider string `yaml:"provider"`
-	// "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
+	// "responses", "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
 	Type             string        `yaml:"type"`
 	BaseURL          string        `yaml:"base_url"`
 	APIKey           string        `yaml:"api_key" json:"-"`

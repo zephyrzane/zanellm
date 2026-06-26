@@ -24,7 +24,7 @@ describe('Badge', () => {
 
     it('default variant applies default bg class', () => {
       render(<Badge variant="default">Default</Badge>)
-      expect(screen.getByText('Default').className).toContain('bg-white/[0.06]')
+      expect(screen.getByText('Default').className).toContain('bg-bg-tertiary')
     })
 
     it('success variant applies success text class', () => {
@@ -79,7 +79,7 @@ describe('Badge', () => {
 
     it('muted variant applies muted bg class', () => {
       render(<Badge variant="muted">muted</Badge>)
-      expect(screen.getByText('muted').className).toContain('bg-white/[0.04]')
+      expect(screen.getByText('muted').className).toContain('bg-bg-tertiary')
     })
   })
 

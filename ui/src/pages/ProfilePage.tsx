@@ -5,12 +5,13 @@ import { PageHeader } from '../components/ui/PageHeader'
 import { Input } from '../components/ui/Input'
 import { Button } from '../components/ui/Button'
 import { Dialog } from '../components/ui/Dialog'
+import { VisualSelect } from '../components/ui/VisualSelect'
 import { Avatar } from '../components/profile/Avatar'
 import { useMe } from '../hooks/useMe'
 import { useUpdateProfile, useChangePassword, useRemovePassword } from '../hooks/useProfile'
 import { useUsage } from '../hooks/useUsage'
 import { useToast } from '../hooks/useToast'
-import { formatCost, formatNumber, formatTokens } from '../lib/utils'
+import { cn, formatCost, formatNumber, formatTokens } from '../lib/utils'
 import {
   getStoredAvatar,
   isProfileSetupComplete,
@@ -26,10 +27,11 @@ import {
   nearestNipponColor,
   nipponColors,
   saveTheme,
+  saveThemeMode,
   subscribeThemeChanges,
   themeNameForColor,
 } from '../lib/theme'
-import type { NipponColor } from '../lib/theme'
+import type { ThemeMode } from '../lib/theme'
 
 function getLast30Days(): { from: string; to: string } {
   const now = new Date()
@@ -38,7 +40,7 @@ function getLast30Days(): { from: string; to: string } {
 }
 
 function SettingsPanel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
-  return <div className={`zanellm-settings-panel overflow-hidden rounded-xl ${className}`}>{children}</div>
+  return <div className={cn('zanellm-settings-panel rounded-xl', className)}>{children}</div>
 }
 
 function StatStrip({ requests, tokens, cost }: { requests: number; tokens: number; cost: number }) {
@@ -49,9 +51,9 @@ function StatStrip({ requests, tokens, cost }: { requests: number; tokens: numbe
   ]
 
   return (
-    <div className="mx-auto grid max-w-[720px] grid-cols-3 overflow-hidden rounded-xl border border-white/[0.08]">
+    <div className="mx-auto grid max-w-[720px] grid-cols-3 overflow-hidden rounded-xl border border-border">
       {items.map((item) => (
-        <div key={item.label} className="border-r border-white/[0.08] px-5 py-3 text-center last:border-r-0">
+        <div key={item.label} className="border-r border-border px-5 py-3 text-center last:border-r-0">
           <div className="text-base font-medium text-text-primary">{item.value}</div>
           <div className="mt-1 text-sm text-text-secondary">{item.label}</div>
         </div>
@@ -60,97 +62,107 @@ function StatStrip({ requests, tokens, cost }: { requests: number; tokens: numbe
   )
 }
 
+function readableTextColor(hex: string): string {
+  const value = hex.replace('#', '')
+  const red = Number.parseInt(value.slice(0, 2), 16)
+  const green = Number.parseInt(value.slice(2, 4), 16)
+  const blue = Number.parseInt(value.slice(4, 6), 16)
+  return red * 0.299 + green * 0.587 + blue * 0.114 > 150 ? '#111111' : '#ffffff'
+}
+
+function IconSun() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" />
+      <path d="M12 20v2" />
+      <path d="m4.93 4.93 1.41 1.41" />
+      <path d="m17.66 17.66 1.41 1.41" />
+      <path d="M2 12h2" />
+      <path d="M20 12h2" />
+      <path d="m6.34 17.66-1.41 1.41" />
+      <path d="m19.07 4.93-1.41 1.41" />
+    </svg>
+  )
+}
+
+function IconMoon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a6.5 6.5 0 0 0 9.8 9.8Z" />
+    </svg>
+  )
+}
+
 function ThemeSetupSection() {
   const storedTheme = useSyncExternalStore(subscribeThemeChanges, getStoredTheme, () => themeNameForColor('kuro', 'dark'))
-  const [selectedColor, setSelectedColor] = useState(() => colorSlugFromTheme(storedTheme))
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState('')
-  const activeColor = nipponColors.find((color) => color.slug === selectedColor) ?? nipponColors[0]
-  const filteredColors = nipponColors.filter((color) => {
-    const target = `${color.label} ${color.japanese} ${color.hex}`.toLowerCase()
-    return target.includes(query.trim().toLowerCase())
-  })
+  const selectedColor = colorSlugFromTheme(storedTheme)
+  const mode = getStoredThemeMode()
+  const colorOptions = nipponColors.map((color) => ({
+    value: color.slug,
+    label: color.label,
+    description: `${color.japanese} / ${color.hex}`,
+    searchText: `${color.japanese} ${color.hex}`,
+    icon: (
+      <span
+        aria-hidden="true"
+        className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-border text-xs font-semibold"
+        style={{ backgroundColor: color.hex, color: readableTextColor(color.hex) }}
+      >
+        Aa
+      </span>
+    ),
+  }))
 
-  function chooseColor(color: NipponColor) {
-    setSelectedColor(color.slug)
-    saveTheme(themeNameForColor(color.slug, getStoredThemeMode()))
+  function chooseColor(slug: string) {
+    saveTheme(themeNameForColor(slug, mode))
     applyStoredTheme()
-    setOpen(false)
-    setQuery('')
   }
 
-  useEffect(() => {
-    setSelectedColor(colorSlugFromTheme(storedTheme))
-  }, [storedTheme])
+  function chooseMode(nextMode: ThemeMode) {
+    saveThemeMode(nextMode)
+    applyStoredTheme()
+  }
 
   return (
     <SettingsPanel>
-      <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div>
           <h2 className="text-base font-medium text-text-primary">Theme</h2>
-          <p className="mt-1 text-sm text-text-tertiary">Choose the app palette. Appearance follows the system default.</p>
+          <p className="mt-1 text-sm text-text-tertiary">Choose the app palette and mode.</p>
         </div>
       </div>
       <div className="p-4">
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="flex w-full items-center justify-between rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-left hover:bg-white/[0.055]"
-        >
-          <span>
-            <span className="block text-base font-medium text-text-primary">{activeColor.label}</span>
-            <span className="mt-1 block text-sm text-text-tertiary">{activeColor.japanese} / {activeColor.hex}</span>
-          </span>
-          <span className="flex items-center gap-3">
-            <span className="h-8 w-14 rounded-md border border-white/10" style={{ backgroundColor: activeColor.hex }} />
-            <span className="text-sm text-text-tertiary">Choose</span>
-          </span>
-        </button>
-      </div>
-
-      {open && (
-        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
-          <div className="zanellm-settings-panel flex max-h-[80vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl">
-            <div className="border-b border-white/[0.08] p-4">
-              <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-lg font-medium text-text-primary">Nippon Colors</h3>
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="rounded-lg px-2 py-1 text-sm text-text-tertiary hover:bg-white/[0.055] hover:text-text-primary"
-                >
-                  Close
-                </button>
-              </div>
-              <Input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search color..."
-                aria-label="Search color"
-              />
-            </div>
-            <div className="overflow-y-auto">
-              {filteredColors.map((color) => (
-                <button
-                  key={color.slug}
-                  type="button"
-                  onClick={() => chooseColor(color)}
-                  className={[
-                    'flex w-full items-center justify-between border-b border-white/[0.08] px-4 py-3 text-left transition-colors last:border-b-0',
-                    color.slug === selectedColor ? 'bg-white/[0.07]' : 'hover:bg-white/[0.04]',
-                  ].join(' ')}
-                >
-                  <span>
-                    <span className="block text-base text-text-primary">{color.label}</span>
-                    <span className="mt-0.5 block text-sm text-text-tertiary">{color.japanese} / {color.hex}</span>
-                  </span>
-                  <span className="h-8 w-16 rounded-md border border-white/10" style={{ backgroundColor: color.hex }} />
-                </button>
-              ))}
-            </div>
-          </div>
+        <VisualSelect
+          label="Nippon color"
+          searchable
+          options={colorOptions}
+          value={selectedColor}
+          onChange={chooseColor}
+        />
+        <div className="mt-3 grid grid-cols-2 gap-2 rounded-lg border border-border bg-bg-tertiary p-1">
+          {([
+            { value: 'light' as const, label: 'Light', icon: <IconSun /> },
+            { value: 'dark' as const, label: 'Dark', icon: <IconMoon /> },
+          ]).map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              onClick={() => chooseMode(item.value)}
+              className={cn(
+                'flex h-9 items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors',
+                mode === item.value
+                  ? 'bg-bg-secondary text-text-primary shadow-sm'
+                  : 'text-text-tertiary hover:bg-bg-secondary hover:text-text-primary',
+              )}
+              aria-pressed={mode === item.value}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </button>
+          ))}
         </div>
-      )}
+      </div>
     </SettingsPanel>
   )
 }
@@ -289,14 +301,14 @@ function ProfileSetupSection({
         }}
         noValidate
       >
-        <div className="border-b border-white/[0.08] px-4 py-3">
+        <div className="border-b border-border px-4 py-3">
           <h2 className="text-base font-medium text-text-primary">Profile</h2>
         </div>
         <div className="space-y-5 p-4">
           <div className="flex items-center gap-4">
             <Avatar name={displayName} src={avatar} size="lg" />
             <div className="flex flex-wrap gap-2">
-              <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-[#d9d9d9] px-4 py-2 text-sm font-medium text-[#0b0b0b] hover:bg-[#eeeeee]">
+              <label className="inline-flex cursor-pointer items-center justify-center rounded-md bg-accent px-4 py-2 text-sm font-medium text-bg-primary hover:opacity-90">
                 Choose picture
                 <input type="file" accept="image/*" className="sr-only" onChange={handleAvatarFile} />
               </label>
@@ -388,7 +400,7 @@ function ChangePasswordSection() {
   return (
     <SettingsPanel className="lg:col-span-2">
       <form onSubmit={handleSubmit} noValidate>
-        <div className="border-b border-white/[0.08] px-4 py-3">
+        <div className="border-b border-border px-4 py-3">
           <h2 className="text-base font-medium text-text-primary">Password</h2>
         </div>
         <div className="grid gap-4 p-4 lg:grid-cols-3">

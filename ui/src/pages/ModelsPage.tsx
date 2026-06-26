@@ -45,6 +45,7 @@ const MODEL_TYPE_OPTIONS = [
   { value: 'chat', label: 'Chat' },
   { value: 'embedding', label: 'Embedding' },
   { value: 'reranking', label: 'Reranking' },
+  { value: 'responses', label: 'Responses' },
   { value: 'completion', label: 'Completion' },
   { value: 'image', label: 'Image Generation' },
   { value: 'audio_transcription', label: 'Audio Transcription' },
@@ -95,6 +96,7 @@ const typeLabels: Record<string, string> = {
   chat: 'Chat',
   embedding: 'Embedding',
   reranking: 'Reranking',
+  responses: 'Responses',
   completion: 'Completion',
   image: 'Image',
   audio_transcription: 'Audio',
@@ -105,6 +107,7 @@ const typeBadgeVariant: Record<string, 'default' | 'info' | 'muted' | 'success' 
   chat: 'default',
   embedding: 'info',
   reranking: 'info',
+  responses: 'default',
   completion: 'muted',
   image: 'success',
   audio_transcription: 'warning',
@@ -196,7 +199,7 @@ function ProviderMark({ preset }: { preset: ProviderPreset }) {
   return (
     <span
       className={cn(
-        'flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-white/10 bg-[#151515] text-[11px] font-semibold text-text-primary',
+        'flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-bg-tertiary text-[11px] font-semibold text-text-primary',
       )}
       aria-hidden="true"
     >
@@ -233,8 +236,8 @@ function ProviderPicker({ value, baseUrl, disabled, error, onSelect }: ProviderP
               onClick={() => onSelect(preset)}
               className={cn(
                 'flex min-h-12 items-center gap-2 rounded-md border px-2 py-2 text-left text-sm transition-colors',
-                'border-white/[0.07] bg-[#080808] text-text-secondary hover:border-white/20 hover:bg-[#141414] hover:text-text-primary',
-                active && 'border-white/50 bg-white/[0.12] text-text-primary shadow-[0_0_0_1px_rgba(255,255,255,0.12)]',
+                'border-border bg-bg-secondary text-text-secondary hover:border-accent hover:bg-bg-tertiary hover:text-text-primary',
+                active && 'border-accent bg-bg-tertiary text-text-primary shadow-[0_0_0_1px_var(--color-accent-glow)]',
                 disabled && 'cursor-not-allowed opacity-50',
               )}
             >
@@ -1631,11 +1634,11 @@ function ModelMetricStrip({
   ]
 
   return (
-    <div className="grid border-b border-white/[0.08] sm:grid-cols-3">
+    <div className="grid border-b border-border sm:grid-cols-3">
       {items.map((item) => (
         <div
           key={item.label}
-          className="border-b border-white/[0.08] px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
+          className="border-b border-border px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
         >
           <div className="text-base font-medium text-text-primary">{item.value}</div>
           <div className="mt-0.5 text-sm text-text-tertiary">{item.label}</div>
@@ -1888,7 +1891,7 @@ export default function ModelsPage({ embedded = false }: ModelsPageProps) {
   return (
     <>
       {embedded ? (
-        <div className="flex items-start justify-between border-b border-white/[0.08] px-4 py-4">
+        <div className="flex items-start justify-between border-b border-border px-4 py-4">
           <div>
             <h2 className="text-base font-medium text-text-primary">Providers</h2>
             <p className="mt-1 text-sm text-text-tertiary">Add upstream provider routes and deployments.</p>

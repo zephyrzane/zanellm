@@ -293,6 +293,16 @@ func TestCreateModel(t *testing.T) {
 			},
 			wantStatus: fiber.StatusCreated,
 		},
+		{
+			name: "valid model type responses returns 201",
+			body: map[string]any{
+				"name":     "responses-model",
+				"provider": "openai_responses",
+				"base_url": "https://api.openai.com/v1",
+				"type":     "responses",
+			},
+			wantStatus: fiber.StatusCreated,
+		},
 	}
 
 	for _, tc := range tests {

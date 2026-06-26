@@ -14,7 +14,7 @@ export interface TabSwitcherProps {
 
 export default function TabSwitcher({ tabs, activeKey, onChange, className }: TabSwitcherProps) {
   return (
-    <div role="tablist" className={cn('inline-flex gap-1 rounded-xl bg-[#202020] p-1', className ?? 'mb-6')}>
+    <div role="tablist" className={cn('inline-flex gap-1 rounded-xl bg-bg-tertiary p-1', className ?? 'mb-6')}>
       {tabs.map((tab) => (
         <button
           key={tab.key}
@@ -25,8 +25,8 @@ export default function TabSwitcher({ tabs, activeKey, onChange, className }: Ta
           className={cn(
             'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150',
             tab.key === activeKey
-              ? 'bg-[#303030] text-text-primary'
-              : 'text-text-tertiary hover:bg-white/[0.045] hover:text-text-secondary'
+              ? 'bg-bg-secondary text-text-primary'
+              : 'text-text-tertiary hover:bg-bg-secondary hover:text-text-secondary'
           )}
         >
           {tab.label}

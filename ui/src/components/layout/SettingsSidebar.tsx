@@ -84,7 +84,7 @@ export function SettingsSidebar() {
 
   return (
     <aside aria-label="Settings navigation" className="fixed left-0 top-0 z-40 flex h-screen w-[371px] flex-col bg-bg-primary px-2 py-5">
-      <Link to="/gateway" className="mb-5 flex h-8 items-center gap-2 rounded-lg px-3 text-lg text-text-secondary no-underline hover:bg-white/[0.055] hover:text-text-primary">
+      <Link to="/gateway" className="mb-5 flex h-8 items-center gap-2 rounded-lg px-3 text-lg text-text-secondary no-underline hover:bg-bg-tertiary hover:text-text-primary">
         <IconArrowLeft />
         <span>Back to app</span>
       </Link>
@@ -97,7 +97,7 @@ export function SettingsSidebar() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Search settings..."
-          className="zanellm-control-surface h-9 w-full rounded-xl border border-white/[0.08] pl-10 pr-3 text-lg text-text-primary outline-none placeholder:text-text-tertiary focus:border-white/20"
+          className="zanellm-control-surface h-9 w-full rounded-xl border border-border pl-10 pr-3 text-lg text-text-primary outline-none placeholder:text-text-tertiary focus:border-accent"
         />
       </label>
 
@@ -112,8 +112,8 @@ export function SettingsSidebar() {
               [
                 'flex h-10 items-center gap-3 rounded-lg px-3 py-2 text-lg no-underline transition-colors',
                 isActive
-                  ? 'bg-white/[0.08] text-text-primary'
-                  : 'text-text-secondary hover:bg-white/[0.055] hover:text-text-primary',
+                  ? 'bg-bg-tertiary text-text-primary'
+                  : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary',
               ].join(' ')
             }
           >

@@ -10,12 +10,12 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 const baseClasses = 'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-medium'
 
 const variantClasses: Record<NonNullable<BadgeProps['variant']>, string> = {
-  default: 'border-white/10 bg-white/[0.06] text-text-primary',
+  default: 'border-border bg-bg-tertiary text-text-primary',
   success: 'border-success/20 bg-success/10 text-success',
   warning: 'border-warning/20 bg-warning/10 text-warning',
   error: 'border-error/20 bg-error/10 text-error',
   info: 'border-info/20 bg-info/10 text-info',
-  muted: 'border-white/10 bg-white/[0.04] text-text-tertiary font-mono',
+  muted: 'border-border bg-bg-tertiary text-text-tertiary font-mono',
 }
 
 export function Badge({ children, variant = 'default', icon, className, ...rest }: BadgeProps) {

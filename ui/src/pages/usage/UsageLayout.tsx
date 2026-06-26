@@ -16,7 +16,7 @@ export default function UsageLayout() {
         description="Track model requests, tokens, and costs"
       />
 
-      <div className="mb-6 inline-flex items-center gap-1 rounded-xl bg-[#242424] p-1">
+      <div className="mb-6 inline-flex items-center gap-1 rounded-xl bg-bg-tertiary p-1">
         {tabs.map((tab) => {
           const isActive = tab.exact
             ? location.pathname === tab.path
@@ -27,8 +27,8 @@ export default function UsageLayout() {
               to={tab.path}
               className={`rounded px-3 py-1.5 text-sm font-medium no-underline transition-colors ${
                 isActive
-                  ? 'bg-[#303030] text-text-primary'
-                  : 'text-text-secondary hover:bg-white/[0.045] hover:text-text-primary'
+                  ? 'bg-bg-secondary text-text-primary'
+                  : 'text-text-secondary hover:bg-bg-secondary hover:text-text-primary'
               }`}
             >
               {tab.label}
