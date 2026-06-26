@@ -1,5 +1,5 @@
 # ZaneLLM
-From [artemisia hub's team](tg.me/https://t.me/artemisia_hub/)
+From [artemisia hub's team](https://t.me/artemisia_hub/)
 <p align="center">
   <img src="ui/public/logo-zanellm.png" alt="ZaneLLM" width="96" />
 </p>
