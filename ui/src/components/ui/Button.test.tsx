@@ -23,9 +23,9 @@ describe('Button', () => {
   })
 
   describe('Variants', () => {
-    it('default variant is primary — has accent bg class', () => {
+    it('default variant is primary — has primary bg class', () => {
       render(<Button>Primary</Button>)
-      expect(screen.getByRole('button').className).toContain('bg-accent')
+      expect(screen.getByRole('button').className).toContain('bg-[#d9d9d9]')
     })
 
     it('secondary variant has border class', () => {
@@ -69,7 +69,7 @@ describe('Button', () => {
 
     it('lg applies larger padding class', () => {
       render(<Button size="lg">Large</Button>)
-      expect(screen.getByRole('button').className).toContain('px-6')
+      expect(screen.getByRole('button').className).toContain('px-5')
     })
   })
 

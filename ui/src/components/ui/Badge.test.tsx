@@ -17,14 +17,14 @@ describe('Badge', () => {
   })
 
   describe('Variants', () => {
-    it('default variant (no prop) applies accent text class', () => {
+    it('default variant (no prop) applies primary text class', () => {
       render(<Badge>Default</Badge>)
-      expect(screen.getByText('Default').className).toContain('text-accent')
+      expect(screen.getByText('Default').className).toContain('text-text-primary')
     })
 
-    it('default variant applies accent bg class', () => {
+    it('default variant applies default bg class', () => {
       render(<Badge variant="default">Default</Badge>)
-      expect(screen.getByText('Default').className).toContain('bg-accent/15')
+      expect(screen.getByText('Default').className).toContain('bg-white/[0.06]')
     })
 
     it('success variant applies success text class', () => {
@@ -34,7 +34,7 @@ describe('Badge', () => {
 
     it('success variant applies success bg class', () => {
       render(<Badge variant="success">Success</Badge>)
-      expect(screen.getByText('Success').className).toContain('bg-success/15')
+      expect(screen.getByText('Success').className).toContain('bg-success/10')
     })
 
     it('warning variant applies warning text class', () => {
@@ -44,7 +44,7 @@ describe('Badge', () => {
 
     it('warning variant applies warning bg class', () => {
       render(<Badge variant="warning">Warning</Badge>)
-      expect(screen.getByText('Warning').className).toContain('bg-warning/15')
+      expect(screen.getByText('Warning').className).toContain('bg-warning/10')
     })
 
     it('error variant applies error text class', () => {
@@ -54,7 +54,7 @@ describe('Badge', () => {
 
     it('error variant applies error bg class', () => {
       render(<Badge variant="error">Error</Badge>)
-      expect(screen.getByText('Error').className).toContain('bg-error/15')
+      expect(screen.getByText('Error').className).toContain('bg-error/10')
     })
 
     it('info variant applies info text class', () => {
@@ -64,7 +64,7 @@ describe('Badge', () => {
 
     it('info variant applies info bg class', () => {
       render(<Badge variant="info">Info</Badge>)
-      expect(screen.getByText('Info').className).toContain('bg-info/15')
+      expect(screen.getByText('Info').className).toContain('bg-info/10')
     })
 
     it('muted variant applies text-tertiary text class', () => {
@@ -77,9 +77,9 @@ describe('Badge', () => {
       expect(screen.getByText('muted').className).toContain('font-mono')
     })
 
-    it('muted variant applies bg-tertiary class', () => {
+    it('muted variant applies muted bg class', () => {
       render(<Badge variant="muted">muted</Badge>)
-      expect(screen.getByText('muted').className).toContain('bg-bg-tertiary')
+      expect(screen.getByText('muted').className).toContain('bg-white/[0.04]')
     })
   })
 
