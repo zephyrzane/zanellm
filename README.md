@@ -50,7 +50,7 @@ Providers and compatible APIs:
 - NVIDIA
 - SambaNova
 - Ollama, vLLM
-- and many more
+and many more
 
 Model types:
 
