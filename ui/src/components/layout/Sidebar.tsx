@@ -81,7 +81,7 @@ function buildNavigation(): NavGroup[] {
       label: '',
       items: [
         { label: 'Dashboard', path: '/', icon: <IconDashboard /> },
-        { label: 'API & Accounts', path: '/gateway', icon: <IconLayers /> },
+        { label: 'Accounts & API', path: '/gateway', icon: <IconLayers /> },
         { label: 'Playground', path: '/playground', icon: <IconTerminal /> },
         { label: 'Guide', path: '/guide', icon: <IconGuide /> },
       ],
@@ -102,7 +102,7 @@ export function Sidebar() {
         {visibleGroups.map((group, groupIndex) => (
             <div key={group.label || `group-${groupIndex}`}>
               {groupIndex > 0 && (
-                <div className="my-3 h-px bg-white/[0.07]" />
+                <div className="my-3 h-px bg-border" />
               )}
               {group.label && (
                 <div className="px-0 pb-2 pt-4 text-sm text-text-tertiary/70">
@@ -118,8 +118,8 @@ export function Sidebar() {
                       [
                         'flex h-10 items-center gap-2.5 rounded-lg px-3 text-lg no-underline transition-colors duration-150',
                         isActive
-                          ? 'text-text-primary'
-                          : 'text-text-secondary hover:bg-white/[0.055] hover:text-text-primary',
+                          ? 'bg-bg-tertiary text-text-primary'
+                          : 'text-text-secondary hover:bg-bg-tertiary hover:text-text-primary',
                       ].join(' ')
                     }
                   >
@@ -132,7 +132,7 @@ export function Sidebar() {
       </nav>
 
       <div className="shrink-0 px-4 pb-5">
-        <div className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-3">
+        <div className="rounded-xl border border-border bg-bg-secondary p-3">
           <p className="text-sm text-text-tertiary">Found an issue?</p>
           <a
             href="https://github.com/zephyrzane/zanellm/pulls"

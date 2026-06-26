@@ -47,11 +47,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           aria-invalid={error ? true : undefined}
           aria-describedby={ariaDescribedBy}
           className={cn(
-            'block w-full rounded-xl bg-[#202020] border border-white/[0.08] px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary',
+            'block w-full rounded-xl border border-border bg-bg-tertiary px-3.5 py-2.5 text-sm text-text-primary placeholder:text-text-tertiary',
             'transition-colors duration-150',
-            'focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10',
+            'focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
             error && 'border-error focus:border-error focus:ring-error/40',
-            disabled && 'opacity-50 cursor-not-allowed bg-white/[0.02]',
+            disabled && 'cursor-not-allowed bg-bg-secondary opacity-50',
             className,
           )}
           {...rest}

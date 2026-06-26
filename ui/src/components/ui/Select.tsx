@@ -244,9 +244,9 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
           }}
           onKeyDown={handleTriggerKeyDown}
           className={cn(
-            'flex items-center justify-between w-full rounded-md bg-[#101010] border border-white/[0.09] px-3 py-2 text-sm',
+            'flex items-center justify-between w-full rounded-md border border-border bg-bg-tertiary px-3 py-2 text-sm',
             'transition-colors duration-150 cursor-pointer',
-            'focus:outline-none focus:border-white/30 focus:ring-2 focus:ring-white/10',
+            'focus:outline-none focus:border-accent focus:ring-2 focus:ring-accent/20',
             error && 'border-error focus:border-error focus:ring-error/40',
             disabled && 'opacity-50 cursor-not-allowed',
           )}
@@ -286,7 +286,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                 : undefined
             }
             className={cn(
-              'absolute left-0 w-full bg-bg-secondary/95 backdrop-blur-xl border border-white/[0.09] rounded-md shadow-2xl z-40 max-h-60 overflow-y-auto',
+              'absolute left-0 w-full bg-bg-secondary/95 backdrop-blur-xl border border-border rounded-md shadow-2xl z-40 max-h-60 overflow-y-auto',
               // Fix 5: position above or below based on viewport space
               dropAbove ? 'bottom-full mb-1' : 'top-full mt-1',
             )}
@@ -304,7 +304,7 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                     setHighlightIndex(0)
                   }}
                   placeholder="Search..."
-                  className="w-full px-3 py-2 text-sm bg-transparent border-b border-white/[0.08] text-text-primary placeholder:text-text-tertiary focus:outline-none"
+                  className="w-full border-b border-border bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-tertiary focus:outline-none"
                 />
               </div>
             )}
@@ -320,8 +320,8 @@ export const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
                   onMouseEnter={() => setHighlightIndex(i)}
                   className={cn(
                     'px-3 py-2 text-sm cursor-pointer transition-colors',
-                    i === clampedHighlight && 'bg-white/[0.06]',
-                    opt.value === value && 'text-text-primary bg-white/[0.09]',
+                    i === clampedHighlight && 'bg-bg-tertiary',
+                    opt.value === value && 'bg-bg-tertiary text-text-primary',
                     opt.value !== value && 'text-text-primary',
                   )}
                 >

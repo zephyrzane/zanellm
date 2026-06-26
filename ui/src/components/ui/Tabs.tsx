@@ -23,8 +23,8 @@ export function Tabs({ tabs }: TabsProps) {
             cn(
               'rounded px-3 py-1.5 text-sm font-medium no-underline transition-colors duration-150',
               isActive
-                ? 'bg-white/[0.08] text-text-primary'
-                : 'text-text-tertiary hover:bg-white/[0.045] hover:text-text-secondary'
+                ? 'bg-bg-secondary text-text-primary'
+                : 'text-text-tertiary hover:bg-bg-secondary hover:text-text-secondary'
             )
           }
         >

@@ -322,16 +322,18 @@ function themeFromNipponColor(color: NipponColor, appearance: ThemeMode): ThemeP
         '--color-text-tertiary': mix(base, '#ffffff', 0.48),
         '--color-accent': mix(base, '#ffffff', 0.82),
         '--color-accent-glow': 'rgba(255, 255, 255, 0.18)',
+        '--color-border': 'rgba(255, 255, 255, 0.09)',
       }
     : {
-        '--color-bg-primary': mix(base, '#ffffff', 0.88),
-        '--color-bg-secondary': mix(base, '#ffffff', 0.95),
-        '--color-bg-tertiary': mix(base, '#ffffff', 0.72),
+        '--color-bg-primary': mix(base, '#ffffff', 0.9),
+        '--color-bg-secondary': mix(base, '#ffffff', 0.96),
+        '--color-bg-tertiary': mix(base, '#ffffff', 0.82),
         '--color-text-primary': '#171717',
-        '--color-text-secondary': mix(base, '#000000', 0.62),
-        '--color-text-tertiary': mix(base, '#000000', 0.42),
-        '--color-accent': mix(base, '#000000', 0.72),
+        '--color-text-secondary': '#3f3f46',
+        '--color-text-tertiary': '#71717a',
+        '--color-accent': mix(base, '#000000', 0.62),
         '--color-accent-glow': 'rgba(0, 0, 0, 0.12)',
+        '--color-border': 'rgba(24, 24, 27, 0.12)',
       }
 
   return {
@@ -369,14 +371,17 @@ export function applyTheme(name: ThemeName) {
   const root = document.documentElement
   const theme = getTheme(name)
 
+  root.dataset.themeMode = theme.appearance
+  root.style.colorScheme = theme.appearance
   for (const [property, value] of Object.entries(theme.values)) {
     root.style.setProperty(property, value)
   }
 }
 
 export function getStoredThemeMode(): ThemeMode {
-  if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: light)').matches) {
-    return 'light'
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem(THEME_MODE_STORAGE_KEY)
+    if (stored === 'light' || stored === 'dark') return stored
   }
   return 'dark'
 }
@@ -394,8 +399,10 @@ export function getStoredTheme(): ThemeName {
 }
 
 export function saveTheme(name: ThemeName) {
-  localStorage.setItem(THEME_STORAGE_KEY, name)
-  applyStoredTheme()
+  const theme = getTheme(name)
+  localStorage.setItem(THEME_STORAGE_KEY, theme.name)
+  localStorage.setItem(THEME_MODE_STORAGE_KEY, theme.appearance)
+  applyTheme(theme.name)
   window.dispatchEvent(new Event(THEME_EVENT))
 }
 
@@ -403,7 +410,7 @@ export function saveThemeMode(mode: ThemeMode) {
   localStorage.setItem(THEME_MODE_STORAGE_KEY, mode)
   const nextTheme = resolveThemeName(getStoredTheme(), mode)
   localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
-  applyStoredTheme()
+  applyTheme(nextTheme)
   window.dispatchEvent(new Event(THEME_EVENT))
 }
 

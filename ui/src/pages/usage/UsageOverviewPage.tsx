@@ -48,7 +48,7 @@ function buildCalendar(days: number) {
 }
 
 function intensityClass(value: number, max: number): string {
-  if (value <= 0 || max <= 0) return 'bg-white/[0.045]'
+  if (value <= 0 || max <= 0) return 'bg-bg-tertiary'
   const ratio = value / max
   if (ratio >= 0.75) return 'bg-[#ff8f8f]'
   if (ratio >= 0.45) return 'bg-[#b86262]'
@@ -105,9 +105,31 @@ function collapse(rows: UsageDataPoint[]): UsageDataPoint {
   )
 }
 
+function buildMonthLabels(cells: { month: string; index?: number }[]): { month: string; index: number }[] {
+  const starts = cells.reduce<{ month: string; index: number }[]>((acc, cell, index) => {
+    if (index === 0 || cell.month !== cells[index - 1]?.month) {
+      acc.push({ month: cell.month, index })
+    }
+    return acc
+  }, [])
+
+  return starts.reduce<{ month: string; index: number }[]>((acc, label, index) => {
+    const next = starts[index + 1]
+    if (label.index === 0 && next && next.index - label.index < 14) {
+      return acc
+    }
+
+    const previous = acc[acc.length - 1]
+    if (!previous || label.index - previous.index >= 14) {
+      acc.push(label)
+    }
+    return acc
+  }, [])
+}
+
 function RangeSwitcher({ value, onChange }: { value: RangeKey; onChange: (value: RangeKey) => void }) {
   return (
-    <div className="inline-flex rounded-xl bg-[#202020] p-1">
+    <div className="inline-flex rounded-xl bg-bg-tertiary p-1">
       {ranges.map((range) => (
         <button
           key={range.key}
@@ -116,8 +138,8 @@ function RangeSwitcher({ value, onChange }: { value: RangeKey; onChange: (value:
           className={cn(
             'rounded-lg px-3 py-1.5 text-sm font-medium transition-colors duration-150',
             value === range.key
-              ? 'bg-[#303030] text-text-primary'
-              : 'text-text-tertiary hover:bg-white/[0.045] hover:text-text-secondary',
+              ? 'bg-bg-secondary text-text-primary'
+              : 'text-text-tertiary hover:bg-bg-secondary hover:text-text-secondary',
           )}
         >
           {range.label}
@@ -136,9 +158,9 @@ function StatStrip({ summary, rangeLabel, activeDays }: { summary: UsageDataPoin
   ]
 
   return (
-    <div className="grid overflow-hidden rounded-xl border border-white/[0.08] md:grid-cols-4">
+    <div className="grid overflow-hidden rounded-xl border border-border md:grid-cols-4">
       {items.map((item) => (
-        <div key={item.label} className="border-b border-white/[0.08] px-6 py-4 text-center last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
+        <div key={item.label} className="border-b border-border px-6 py-4 text-center last:border-b-0 md:border-b-0 md:border-r md:last:border-r-0">
           <div className="text-base font-medium text-text-primary">{item.value}</div>
           <div className="mt-1 text-base text-text-secondary">{item.label}</div>
         </div>
@@ -164,7 +186,7 @@ function DetailGrid({ summary }: { summary: UsageDataPoint }) {
   return (
     <section className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
       {items.map(([label, value]) => (
-        <div key={label} className="rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3">
+        <div key={label} className="rounded-xl border border-border bg-bg-secondary px-4 py-3">
           <div className="text-sm text-text-tertiary">{label}</div>
           <div className="mt-1 font-mono text-sm text-text-primary">{value}</div>
         </div>
@@ -183,13 +205,7 @@ function TokenActivity({ rows, days }: { rows: UsageDataPoint[]; days: number })
     return map
   }, [rows])
   const max = Math.max(...Array.from(values.values()), 0)
-  const monthLabels = cells.reduce<{ month: string; index: number }[]>((acc, cell, index) => {
-    const previous = acc[acc.length - 1]
-    if ((index === 0 || cell.month !== cells[index - 1]?.month) && (!previous || index - previous.index >= 14)) {
-      acc.push({ month: cell.month, index })
-    }
-    return acc
-  }, [])
+  const monthLabels = buildMonthLabels(cells)
 
   return (
     <section className="mt-10">
@@ -235,9 +251,9 @@ function Breakdown({ title, rows }: { title: string; rows: UsageDataPoint[] }) {
     .slice(0, 6)
 
   return (
-    <section className="rounded-xl border border-white/[0.08] bg-white/[0.02]">
-      <div className="border-b border-white/[0.08] px-4 py-3 text-base font-medium text-text-primary">{title}</div>
-      <div className="divide-y divide-white/[0.08]">
+    <section className="rounded-xl border border-border bg-bg-secondary">
+      <div className="border-b border-border px-4 py-3 text-base font-medium text-text-primary">{title}</div>
+      <div className="divide-y divide-border">
         {sorted.length === 0 ? (
           <div className="px-4 py-4 text-sm text-text-tertiary">No data</div>
         ) : (

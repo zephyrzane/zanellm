@@ -237,7 +237,7 @@ describe('Select', () => {
       fireEvent.keyDown(listbox, { key: 'ArrowDown' })
       const opts = screen.getAllByRole('option')
       // Index 1 (Banana) should now have the highlighted background class
-      expect(opts[1].className).toContain('bg-white/[0.06]')
+      expect(opts[1].className).toContain('bg-bg-tertiary')
     })
 
     it('ArrowUp moves highlight to previous option', async () => {
@@ -249,7 +249,7 @@ describe('Select', () => {
       fireEvent.keyDown(listbox, { key: 'ArrowDown' })
       fireEvent.keyDown(listbox, { key: 'ArrowUp' })
       const opts = screen.getAllByRole('option')
-      expect(opts[1].className).toContain('bg-white/[0.06]')
+      expect(opts[1].className).toContain('bg-bg-tertiary')
     })
 
     it('Enter selects highlighted option and closes dropdown', async () => {
@@ -271,7 +271,7 @@ describe('Select', () => {
       fireEvent.keyDown(listbox, { key: 'End' })
       fireEvent.keyDown(listbox, { key: 'Home' })
       const opts = screen.getAllByRole('option')
-      expect(opts[0].className).toContain('bg-white/[0.06]')
+      expect(opts[0].className).toContain('bg-bg-tertiary')
     })
 
     it('End highlights last option', async () => {
@@ -280,7 +280,7 @@ describe('Select', () => {
       const listbox = screen.getByRole('listbox')
       fireEvent.keyDown(listbox, { key: 'End' })
       const opts = screen.getAllByRole('option')
-      expect(opts[opts.length - 1].className).toContain('bg-white/[0.06]')
+      expect(opts[opts.length - 1].className).toContain('bg-bg-tertiary')
     })
 
     it('ArrowDown does not move highlight past the last option', async () => {
@@ -292,7 +292,7 @@ describe('Select', () => {
         fireEvent.keyDown(listbox, { key: 'ArrowDown' })
       }
       const opts = screen.getAllByRole('option')
-      expect(opts[opts.length - 1].className).toContain('bg-white/[0.06]')
+      expect(opts[opts.length - 1].className).toContain('bg-bg-tertiary')
     })
 
     it('ArrowUp does not move highlight before the first option', async () => {
@@ -302,7 +302,7 @@ describe('Select', () => {
       fireEvent.keyDown(listbox, { key: 'ArrowUp' })
       fireEvent.keyDown(listbox, { key: 'ArrowUp' })
       const opts = screen.getAllByRole('option')
-      expect(opts[0].className).toContain('bg-white/[0.06]')
+      expect(opts[0].className).toContain('bg-bg-tertiary')
     })
 
     it('disabled trigger ignores keyboard open keys', () => {

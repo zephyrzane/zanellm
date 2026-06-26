@@ -450,10 +450,10 @@ func validateProviderAccount(name, provider, authType string) string {
 		return ""
 	}
 	switch authType {
-	case "api_key", "oauth", "cli", "session", "none":
+	case "api_key", "oauth", "setup-token", "setup_token", "cli", "session", "service_account", "bedrock", "none":
 		return ""
 	default:
-		return "auth_type must be one of: api_key, oauth, cli, session, none"
+		return "auth_type must be one of: api_key, oauth, setup-token, cli, session, service_account, bedrock, none"
 	}
 }
 

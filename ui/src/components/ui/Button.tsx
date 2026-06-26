@@ -22,15 +22,15 @@ function LoadingSpinner() {
 }
 
 const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'bg-[#d9d9d9] text-[#0b0b0b]',
-  secondary: 'bg-[#202020] border border-white/[0.08] text-text-secondary',
+  primary: 'bg-accent text-bg-primary',
+  secondary: 'bg-bg-tertiary border border-border text-text-secondary',
   destructive: 'bg-error text-bg-primary',
   ghost: 'bg-transparent text-text-secondary',
 }
 
 const variantHoverClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
-  primary: 'hover:bg-[#eeeeee] active:bg-[#c9c9c9]',
-  secondary: 'hover:bg-white/[0.08] active:brightness-95',
+  primary: 'hover:opacity-90 active:opacity-80',
+  secondary: 'hover:brightness-95 active:brightness-90',
   destructive: 'hover:brightness-110 active:brightness-95',
   ghost: 'hover:text-text-primary hover:opacity-80 active:brightness-95',
 }
@@ -67,7 +67,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-busy={loading || undefined}
         className={cn(
           'inline-flex items-center justify-center font-medium rounded-md transition-all duration-150 cursor-pointer',
-          'focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-bg-primary',
+          'focus:outline-none focus:ring-2 focus:ring-accent/25 focus:ring-offset-2 focus:ring-offset-bg-primary',
           variantClasses[variant],
           !isDisabled && variantHoverClasses[variant],
           sizeClasses[size],

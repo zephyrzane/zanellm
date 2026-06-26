@@ -112,7 +112,7 @@ models:
     base_url: https://api.openai.com/v1
 ```
 
-Supported types: `chat` (default), `embedding`, `completion`, `image`, `audio_transcription`, `tts`.
+Supported types: `chat` (default), `embedding`, `reranking`, `responses`, `completion`, `image`, `audio_transcription`, `tts`.
 
 The type affects:
 - Which models appear in the Playground (tabs per type)

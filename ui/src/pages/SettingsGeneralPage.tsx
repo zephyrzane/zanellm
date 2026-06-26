@@ -23,7 +23,7 @@ function SettingsRow({
   value: React.ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 border-b border-white/[0.08] px-4 py-4 last:border-b-0">
+    <div className="flex items-center justify-between gap-6 border-b border-border px-4 py-4 last:border-b-0">
       <div>
         <h2 className="text-base font-medium text-text-primary">{title}</h2>
         <p className="mt-1 text-base text-text-secondary">{description}</p>

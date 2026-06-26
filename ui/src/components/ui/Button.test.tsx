@@ -25,7 +25,7 @@ describe('Button', () => {
   describe('Variants', () => {
     it('default variant is primary — has primary bg class', () => {
       render(<Button>Primary</Button>)
-      expect(screen.getByRole('button').className).toContain('bg-[#d9d9d9]')
+      expect(screen.getByRole('button').className).toContain('bg-accent')
     })
 
     it('secondary variant has border class', () => {

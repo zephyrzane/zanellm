@@ -63,10 +63,10 @@ function SkeletonRows({
   return (
     <>
       {Array.from({ length: rows }).map((_, i) => (
-        <tr key={i} className="animate-pulse border-b border-white/[0.07]">
+        <tr key={i} className="animate-pulse border-b border-border">
           {Array.from({ length: columns }).map((_, j) => (
             <td key={j} className={cellPadding}>
-              <div className="h-4 w-3/4 rounded bg-white/[0.06]" />
+              <div className="h-4 w-3/4 rounded bg-bg-tertiary" />
             </td>
           ))}
         </tr>
@@ -121,10 +121,10 @@ export function Table<T>({
   const totalCols = hasExpand ? columns.length + 1 : columns.length
 
   return (
-    <div className={cn('overflow-x-auto rounded-xl border border-white/[0.08] bg-[#101010]', className)}>
+    <div className={cn('overflow-x-auto rounded-xl border border-border bg-bg-secondary', className)}>
       <table className="zanellm-table min-w-full">
         <thead>
-          <tr className="border-b border-white/[0.08] bg-[#151515]">
+          <tr className="border-b border-border bg-bg-tertiary">
             {hasExpand && (
               <th scope="col" className="w-8 px-2" aria-label="Expand" />
             )}
@@ -200,8 +200,8 @@ export function Table<T>({
                 <React.Fragment key={key}>
                   <tr
                     className={cn(
-                      'transition-colors hover:bg-white/[0.035]',
-                      showRowBorder && 'border-b border-white/[0.07]',
+                      'transition-colors hover:bg-bg-tertiary',
+                      showRowBorder && 'border-b border-border',
                     )}
                   >
                     {hasExpand && (
@@ -210,7 +210,7 @@ export function Table<T>({
                           <button
                             type="button"
                             onClick={() => onToggleExpand?.(key)}
-                            className="flex h-6 w-6 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-white/[0.06] hover:text-text-primary"
+                            className="flex h-6 w-6 items-center justify-center rounded text-text-tertiary transition-colors hover:bg-bg-tertiary hover:text-text-primary"
                             aria-label={isExpanded ? 'Collapse row' : 'Expand row'}
                             aria-expanded={isExpanded}
                           >
@@ -234,8 +234,8 @@ export function Table<T>({
                     ))}
                   </tr>
                   {isExpanded && (
-                    <tr className={cn(!isLastRow && 'border-b border-white/[0.07]')}>
-                      <td colSpan={totalCols} className="bg-white/[0.025] p-0">
+                    <tr className={cn(!isLastRow && 'border-b border-border')}>
+                      <td colSpan={totalCols} className="bg-bg-tertiary p-0">
                         {expandedContent}
                       </td>
                     </tr>
@@ -247,7 +247,7 @@ export function Table<T>({
         </tbody>
       </table>
       {pagination != null && (
-        <div className="flex items-center justify-end gap-2 border-t border-white/[0.08] px-4 py-3">
+        <div className="flex items-center justify-end gap-2 border-t border-border px-4 py-3">
           <Button
             variant="ghost"
             size="sm"

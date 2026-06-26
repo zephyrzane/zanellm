@@ -26,7 +26,7 @@ type Model struct {
 	ID       string
 	Name     string
 	Provider string
-	// "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
+	// "responses", "completion", "image", "audio_transcription", or "tts". Defaults to "chat".
 	ModelType        string
 	BaseURL          string
 	APIKeyEncrypted  *string
