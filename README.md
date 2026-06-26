@@ -9,8 +9,8 @@
 Privacy-first local LLM gateway for developers.
 
 ZaneLLM gives one local endpoint for provider accounts, API keys, model routing, usage, and playground testing. It is meant to sit between developer tools and upstream model providers.
-<img width="2896" height="2172" alt="upscalemedia-transformed" src="https://github.com/user-attachments/assets/5a234082-c4ae-4fbc-abdc-9e285a3c1a2d" />
 
+<img width="1672" height="941" alt="readme-img" src="https://github.com/user-attachments/assets/1873a683-f152-42b2-a3e1-89d2f85a267d" />
 
 
 ## What It Does
