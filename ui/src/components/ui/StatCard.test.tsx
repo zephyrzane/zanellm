@@ -98,11 +98,11 @@ describe('StatCard', () => {
       expect(screen.getByTestId('sc-merge').className).toContain('custom-class')
     })
 
-    it('default classes include bg-bg-secondary and border', () => {
+    it('default classes include muted surface and rounded shape', () => {
       render(<StatCard label="Requests" value="99" data-testid="sc-defaults" />)
       const cls = screen.getByTestId('sc-defaults').className
-      expect(cls).toContain('bg-bg-secondary')
-      expect(cls).toContain('border')
+      expect(cls).toContain('zanellm-muted-surface')
+      expect(cls).toContain('rounded-xl')
     })
   })
 })

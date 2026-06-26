@@ -165,10 +165,10 @@ function defaultEntries(licensePayload = MOCK_LICENSE_NO_FALLBACK, modelsPayload
 // Dialog helpers
 // ---------------------------------------------------------------------------
 
-/** Opens the "Add Model" dialog via the page header button. */
+/** Opens the "Add provider route" dialog via the page header button. */
 async function openCreateDialog() {
-  // The page header button is the first "Add Model" button on the page.
-  const buttons = screen.getAllByRole('button', { name: /add model/i })
+  // The page header button is the first "Add provider" button on the page.
+  const buttons = screen.getAllByRole('button', { name: /add provider/i })
   await userEvent.click(buttons[0])
 }
 
@@ -211,7 +211,7 @@ async function addMinimalDeployment(dialog: HTMLElement) {
   await userEvent.click(within(dialog).getByRole('button', { name: /^add$/i }))
 }
 
-/** Switches to the Load Balanced tab within the Add Model dialog. */
+/** Switches to the Load Balanced tab within the Add provider route dialog. */
 async function switchToLoadBalancedTab() {
   await userEvent.click(screen.getByRole('tab', { name: /load balanced/i }))
 }
@@ -250,7 +250,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
 
       // Wait for the models list to load (options depend on it)
       await waitFor(() => {
-        const dialog = getDialog(/add model/i)
+        const dialog = getDialog(/add provider route/i)
         const select = getFallbackCombobox(dialog)
         expect(select).toBeDisabled()
       })
@@ -290,13 +290,13 @@ describe('CreateModelDialog — Fallback Model field', () => {
       // Fill in required field: name
       await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'my-lb-model')
 
-      const dialog = getDialog(/add model/i)
+      const dialog = getDialog(/add provider route/i)
 
       // Load balanced mode requires at least one deployment
       await addMinimalDeployment(dialog)
 
       // Submit
-      await submitDialog(dialog, /add model/i)
+      await submitDialog(dialog, /add route/i)
 
       await waitFor(() => expect(capturedBodies.has('POST:/api/v1/models')).toBe(true))
 
@@ -321,7 +321,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
       await switchToLoadBalancedTab()
 
       await waitFor(() => {
-        const dialog = getDialog(/add model/i)
+        const dialog = getDialog(/add provider route/i)
         const select = getFallbackCombobox(dialog)
         expect(select).not.toBeDisabled()
       })
@@ -352,7 +352,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
       // Wait for the select to be enabled
       let fallbackSelect: HTMLElement
       await waitFor(() => {
-        const dialog = getDialog(/add model/i)
+        const dialog = getDialog(/add provider route/i)
         fallbackSelect = getFallbackCombobox(dialog)
         expect(fallbackSelect).not.toBeDisabled()
       })
@@ -400,7 +400,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
       // Wait for and select a fallback model
       let fallbackSelect: HTMLElement
       await waitFor(() => {
-        const dialog = getDialog(/add model/i)
+        const dialog = getDialog(/add provider route/i)
         fallbackSelect = getFallbackCombobox(dialog)
         expect(fallbackSelect).not.toBeDisabled()
       })
@@ -408,13 +408,13 @@ describe('CreateModelDialog — Fallback Model field', () => {
       await userEvent.click(fallbackSelect!)
       await userEvent.click(screen.getByRole('option', { name: 'claude-sonnet' }))
 
-      const dialog = getDialog(/add model/i)
+      const dialog = getDialog(/add provider route/i)
 
       // Load balanced mode requires at least one deployment
       await addMinimalDeployment(dialog)
 
       // Submit
-      await submitDialog(dialog, /add model/i)
+      await submitDialog(dialog, /add route/i)
 
       await waitFor(() => expect(capturedBodies.has('POST:/api/v1/models')).toBe(true))
 
@@ -444,7 +444,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
       await userEvent.type(screen.getByRole('textbox', { name: /^name$/i }), 'new-lb2')
 
       // Wait for the select to be ready but do NOT change it (leave as "None")
-      const dialog = getDialog(/add model/i)
+      const dialog = getDialog(/add provider route/i)
       await waitFor(() => {
         const select = getFallbackCombobox(dialog)
         expect(select).not.toBeDisabled()
@@ -454,7 +454,7 @@ describe('CreateModelDialog — Fallback Model field', () => {
       await addMinimalDeployment(dialog)
 
       // Submit without touching the fallback select
-      await submitDialog(dialog, /add model/i)
+      await submitDialog(dialog, /add route/i)
 
       await waitFor(() => expect(capturedBodies.has('POST:/api/v1/models')).toBe(true))
 
@@ -500,9 +500,9 @@ describe('EditModelDialog — Fallback Model field', () => {
     await openEditDialogForModel('gpt-4o')
 
     // The edit dialog opens — wait for it
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit model/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: /edit provider route/i })).toBeInTheDocument())
 
-    const dialog = getDialog(/edit model/i)
+    const dialog = getDialog(/edit provider route/i)
     const fallbackSelect = getFallbackCombobox(dialog)
 
     // The pre-loaded value should display as 'claude-sonnet'
@@ -530,9 +530,9 @@ describe('EditModelDialog — Fallback Model field', () => {
     renderModelsPage()
 
     await openEditDialogForModel('gpt-4o')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit model/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: /edit provider route/i })).toBeInTheDocument())
 
-    const dialog = getDialog(/edit model/i)
+    const dialog = getDialog(/edit provider route/i)
     const fallbackSelect = getFallbackCombobox(dialog)
 
     // Change the fallback from claude-sonnet to llama-70b
@@ -568,9 +568,9 @@ describe('EditModelDialog — Fallback Model field', () => {
     renderModelsPage()
 
     await openEditDialogForModel('gpt-4o')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit model/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: /edit provider route/i })).toBeInTheDocument())
 
-    const dialog = getDialog(/edit model/i)
+    const dialog = getDialog(/edit provider route/i)
     const fallbackSelect = getFallbackCombobox(dialog)
 
     // Change to "None" (value='') to clear the existing fallback
@@ -612,9 +612,9 @@ describe('EditModelDialog — Fallback Model field', () => {
     renderModelsPage()
 
     await openEditDialogForModel('gpt-4o')
-    await waitFor(() => expect(screen.getByRole('heading', { name: /edit model/i })).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: /edit provider route/i })).toBeInTheDocument())
 
-    const dialog = getDialog(/edit model/i)
+    const dialog = getDialog(/edit provider route/i)
 
     // Change the timeout field only — leave fallback untouched
     const timeoutInput = within(dialog).getByRole('textbox', { name: /timeout/i })

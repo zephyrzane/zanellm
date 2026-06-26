@@ -37,8 +37,8 @@ function getLast30Days(): { from: string; to: string } {
   return { from: from.toISOString(), to: now.toISOString() }
 }
 
-function SettingsPanel({ children }: { children: React.ReactNode }) {
-  return <div className="zanellm-settings-panel overflow-hidden rounded-xl">{children}</div>
+function SettingsPanel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return <div className={`zanellm-settings-panel overflow-hidden rounded-xl ${className}`}>{children}</div>
 }
 
 function StatStrip({ requests, tokens, cost }: { requests: number; tokens: number; cost: number }) {
@@ -49,11 +49,11 @@ function StatStrip({ requests, tokens, cost }: { requests: number; tokens: numbe
   ]
 
   return (
-    <div className="mx-auto grid max-w-[760px] grid-cols-3 overflow-hidden rounded-xl border border-white/[0.08]">
+    <div className="mx-auto grid max-w-[720px] grid-cols-3 overflow-hidden rounded-xl border border-white/[0.08]">
       {items.map((item) => (
-        <div key={item.label} className="border-r border-white/[0.08] px-6 py-4 text-center last:border-r-0">
+        <div key={item.label} className="border-r border-white/[0.08] px-5 py-3 text-center last:border-r-0">
           <div className="text-base font-medium text-text-primary">{item.value}</div>
-          <div className="mt-1 text-base text-text-secondary">{item.label}</div>
+          <div className="mt-1 text-sm text-text-secondary">{item.label}</div>
         </div>
       ))}
     </div>
@@ -386,12 +386,12 @@ function ChangePasswordSection() {
   }
 
   return (
-    <SettingsPanel>
+    <SettingsPanel className="lg:col-span-2">
       <form onSubmit={handleSubmit} noValidate>
         <div className="border-b border-white/[0.08] px-4 py-3">
           <h2 className="text-base font-medium text-text-primary">Password</h2>
         </div>
-        <div className="space-y-4 p-4">
+        <div className="grid gap-4 p-4 lg:grid-cols-3">
           <Input
             label="Current password"
             type="password"
@@ -404,6 +404,7 @@ function ChangePasswordSection() {
             disabled={changePassword.isPending}
             autoComplete="current-password"
             description="Leave empty if the password was removed."
+            className="py-2"
           />
           <Input
             label="New password"
@@ -417,6 +418,7 @@ function ChangePasswordSection() {
             disabled={changePassword.isPending}
             autoComplete="new-password"
             description="At least 8 characters"
+            className="py-2"
           />
           <Input
             label="Confirm new password"
@@ -429,8 +431,9 @@ function ChangePasswordSection() {
             error={confirmPasswordError}
             disabled={changePassword.isPending}
             autoComplete="new-password"
+            className="py-2"
           />
-          <div className="flex justify-end">
+          <div className="flex justify-end lg:col-span-3">
             <Button type="submit" loading={changePassword.isPending}>
               Change Password
             </Button>
@@ -523,20 +526,20 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="mx-auto max-w-[920px] pt-8 pb-16">
+    <div className="mx-auto max-w-[920px] pt-4 pb-8">
       <PageHeader
         title={setup ? 'Set up your profile' : 'Profile'}
         description={setup ? 'Choose your name, picture, and theme.' : undefined}
       />
 
-      <div className="mb-8 flex flex-col items-center">
-        <Avatar name={me.display_name} src={avatar} size="xl" className="mb-4" />
-        <h1 className="text-3xl font-medium text-text-primary">{me.display_name}</h1>
-        <p className="mt-2 text-lg text-text-tertiary">ZaneLLM user</p>
+      <div className="mb-5 flex flex-col items-center">
+        <Avatar name={me.display_name} src={avatar} size="lg" className="mb-3" />
+        <h1 className="text-2xl font-medium text-text-primary">{me.display_name}</h1>
+        <p className="mt-1 text-base text-text-tertiary">ZaneLLM user</p>
       </div>
 
       {!setup && (
-        <div className="mb-6">
+        <div className="mb-4">
           <StatStrip requests={totals.requests} tokens={totals.tokens} cost={totals.cost} />
         </div>
       )}
