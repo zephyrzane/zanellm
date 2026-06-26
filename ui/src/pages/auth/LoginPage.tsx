@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQueryClient } from '@tanstack/react-query'
@@ -43,11 +43,11 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  function finishLogin(data: { token: string; expires_at: string; user: MeResponse }) {
+  const finishLogin = useCallback((data: { token: string; expires_at: string; user: MeResponse }) => {
     localStorage.setItem(LOCAL_STORAGE_KEY, data.token)
     queryClient.setQueryData(['me'], data.user)
     navigate(isProfileSetupComplete() ? '/' : '/profile?setup=1')
-  }
+  }, [navigate, queryClient])
 
   useEffect(() => {
     let cancelled = false
@@ -66,7 +66,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [finishLogin])
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()

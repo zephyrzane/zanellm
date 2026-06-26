@@ -1,6 +1,6 @@
 import { cn } from '../../lib/utils'
 
-export function initials(name?: string): string {
+function initials(name?: string): string {
   return name
     ?.trim()
     .split(/\s+/)
